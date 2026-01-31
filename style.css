@@ -2118,16 +2118,27 @@ input:checked+.slider:before {
     border-radius: 0 0 12px 12px;
 }
 
-#chat-input {
-    flex: 1;
-    height: 40px;
-    border-radius: 20px;
-    padding: 0 15px;
-    background: rgba(0, 0, 0, 0.3);
-    color: white;
-    border: 1px solid var(--border);
+/* تنسيق مربع الكتابة الجديد */
+#chat-user-input {
+    width: 100%;
+    background: transparent;
+    border: none;
+    color: var(--text-main);
+    font-family: var(--font-mono);
+    font-size: 0.9rem;
     outline: none;
+    resize: none;
+    /* منع اليوزر يغير حجمه بإيده */
+    overflow-y: hidden;
+    /* عشان يطول أوتوماتيك */
+    min-height: 24px;
+    max-height: 100px;
+    padding: 8px;
+    border-radius: 12px;
+    box-shadow: inset 0 0 5px rgba(0, 242, 255, 0.1);
+    transition: box-shadow 0.2s;
 }
+
 
 #chat-input:focus {
     border-color: var(--primary);

@@ -1,3 +1,4 @@
+let chatHistory = [];
 // --- 1. CONFIGURATION ---
 const firebaseConfig = {
     apiKey: "AIzaSyAbys42NvBFODlC631hsCcxHzhbIMg1zt0",
@@ -1036,6 +1037,7 @@ function setupIconListeners() {
 document.addEventListener('DOMContentLoaded', () => {
     setupIconListeners();
     loadSimpleIconsIndex(); // Pre-load for faster searches
+    initAIChat();
 });
 
 function editNode(node) {
@@ -3422,3 +3424,103 @@ document.addEventListener('DOMContentLoaded', () => {
     // فحص كل دقيقة للتحديث لو المستخدم فاتح الصفحة فترة طويلة
     setInterval(updateDevOpsTip, 60000);
 });
+
+
+function initAIChat() {
+    const chatInput = document.getElementById('chat-input');
+    const sendBtn = document.getElementById('send-btn');
+
+    if (!chatInput || !sendBtn) return; // حماية عشان لو العناصر مش موجودة الكود ميضربش
+
+    // 1. UI Logic: Auto-expand Textarea
+    chatInput.addEventListener('input', function () {
+        this.style.height = 'auto'; // Reset height
+        this.style.height = (this.scrollHeight) + 'px'; // Set to content height
+
+        // لو الكلام قل، نرجع للطول الأصلي
+        if (this.value === '') {
+            this.style.height = '40px'; // نفس الـ min-height اللي في CSS
+        }
+    });
+
+    // 2. UX Logic: Click to Send ONLY
+    // احنا مش محتاجين نعمل Handle للـ Enter لأنه طبيعي بينزل سطر في الـ Textarea
+    // بس محتاجين نتأكد إن الزرار هو اللي بيبعت
+    sendBtn.addEventListener('click', () => {
+        handleUserMessage();
+    });
+}
+
+
+async function handleUserMessage() {
+    const chatInput = document.getElementById('chat-input');
+    const userText = chatInput.value.trim();
+    const chatContainer = document.querySelector('.chat-history-container'); // تأكد إن ده الـ Class بتاع الحاوية في HTML
+
+    if (!userText) return;
+
+    // 1. UI: Show User Message
+    appendMessageToUI('user', userText);
+
+    // 2. Clear Input & Reset Height
+    chatInput.value = '';
+    chatInput.style.height = '40px';
+
+    // 3. Logic: Update History
+    chatHistory.push({ role: "user", content: userText });
+
+    // 4. Logic: Call AI API (Simulation)
+    // *تحذير أمني*: المفروض الـ Call ده يحصل في Backend عشان المفاتيح متتسرقش
+    // بس عشان انت بتتعلم دلوقتي، دي الطريقة:
+
+    showTypingIndicator(true); // اختياري: أظهر لودينج
+
+    try {
+        // استبدل الرابط ده بالـ Endpoint الحقيقي بتاعك (OpenAI / Gemini / Local LLM)
+        const response = await fetch('https://api.openai.com/v1/chat/completions', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer YOUR_API_KEY_HERE` // <--- حط مفتاحك هنا مؤقتاً
+            },
+            body: JSON.stringify({
+                model: "gpt-4", // أو gpt-3.5-turbo
+                messages: [SYSTEM_PROMPT, ...chatHistory], // <--- هنا السر: بنبعت السيستم + التاريخ كله
+                temperature: 0.7
+            })
+        });
+
+        const data = await response.json();
+        const aiReply = data.choices[0].message.content;
+
+        // 5. Update UI & History with AI Response
+        appendMessageToUI('assistant', aiReply);
+        chatHistory.push({ role: "assistant", content: aiReply });
+
+    } catch (error) {
+        console.error("AI Error:", error);
+        appendMessageToUI('system', "Connection lost. Check console logs.");
+    } finally {
+        showTypingIndicator(false);
+    }
+}
+
+// Helper: عرض الرسالة في الشاشة
+function appendMessageToUI(sender, text) {
+    const chatContainer = document.getElementById('chat-messages-area'); // تأكد من الـ ID في الـ HTML
+    if (!chatContainer) return;
+
+    const msgDiv = document.createElement('div');
+    msgDiv.classList.add('chat-msg', sender); // css class: user or assistant
+
+    // تحويل الـ Markdown لـ HTML (بما انك ضايف مكتبة marked.js)
+    msgDiv.innerHTML = marked.parse(text);
+
+    chatContainer.appendChild(msgDiv);
+
+    // Auto-scroll to bottom
+    chatContainer.scrollTop = chatContainer.scrollHeight;
+}
+
+
+

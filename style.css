@@ -2118,27 +2118,33 @@ input:checked+.slider:before {
     border-radius: 0 0 12px 12px;
 }
 
-/* تنسيق مربع الكتابة الجديد */
-#chat-user-input {
-    width: 100%;
-    background: transparent;
-    border: none;
-    color: var(--text-main);
-    font-family: var(--font-mono);
-    font-size: 0.9rem;
-    outline: none;
-    resize: none;
-    /* منع اليوزر يغير حجمه بإيده */
-    overflow-y: hidden;
-    /* عشان يطول أوتوماتيك */
-    min-height: 24px;
-    max-height: 100px;
-    padding: 8px;
-    border-radius: 12px;
-    box-shadow: inset 0 0 5px rgba(0, 242, 255, 0.1);
-    transition: box-shadow 0.2s;
-}
+#chat-input {
+    flex: 1;
+    /* height: 40px;  <-- شيلنا دي عشان متبقاش ثابتة */
+    min-height: 40px;
+    /* دي البداية بتاعتنا */
+    max-height: 200px;
+    /* أقصى ارتفاع عشان الشات ميبوظش */
 
+    border-radius: 20px;
+    padding: 10px 15px;
+    /* عدلنا الـ Padding عشان الكلام يبقى في النص راسياً */
+
+    background: rgba(0, 0, 0, 0.3);
+    color: white;
+    border: 1px solid var(--border);
+    outline: none;
+
+    /* --- الإضافات الجديدة للـ Textarea --- */
+    resize: none;
+    /* عشان نلغي علامة الشد اللي بتبان تحت يمين */
+    overflow-y: hidden;
+    /* عشان نخفي السكرول بار لحد ما نحتاجه */
+    line-height: 1.4;
+    /* تظبيط المسافات بين السطور لما يكتب كتير */
+    font-family: inherit;
+    /* تأكيد إنه ياخد نفس فونت الموقع */
+}
 
 #chat-input:focus {
     border-color: var(--primary);

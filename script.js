@@ -1,6 +1,6 @@
 // --- 1. CONFIGURATION ---
 const firebaseConfig = {
-    apiKey: "AIzaSyCaLP4Ng0pe8AlX_0KUxgkfg7Kv9YA3nhY",
+    apiKey: "AIzaSyBvs4_sJIhzqFScWyn8aSzS-UO0CQZHoT4",
     authDomain: "devops-roadmap-x3.firebaseapp.com",
     projectId: "devops-roadmap-x3",
     storageBucket: "devops-roadmap-x3.firebasestorage.app",
@@ -3183,7 +3183,7 @@ function calculateTotalLogs() {
 // 🤖 REFACORTED CHATBOT LOGIC (GLOBAL SCOPE)
 // =========================================
 
-const CHAT_API_KEY = "AIzaSyAh1295qAyCTjb4fkMvXSPtzUrZMjG6vgE";
+const CHAT_API_KEY = "AIzaSyBvs4_sJIhzqFScWyn8aSzS-UO0CQZHoT4";
 const CHAT_MODEL = "gemini-2.5-flash"; // Fixed Model Name
 
 // 1. MAKE FUNCTIONS GLOBALLY ACCESSIBLE

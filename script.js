@@ -3181,11 +3181,8 @@ function calculateTotalLogs() {
 }
 
 // =========================================
-// 🤖 REFACORTED CHATBOT LOGIC (GLOBAL SCOPE)
+// 🤖 CHATBOT UI & HELPERS
 // =========================================
-
-// Global Chat History (Context)
-let chatHistory = [];
 
 window.toggleChat = function () {
     const win = document.getElementById('ai-chat-window');
@@ -3200,20 +3197,6 @@ window.toggleChat = function () {
         win.classList.add('visible');
         if (btn) btn.classList.add('pushed-down');
 
-        // Initialize UI if needed
-        const msgs = document.getElementById('chat-messages');
-        if (msgs) {
-            const hasHistory = window.loadChatHistory();
-            if (!hasHistory && msgs.innerHTML.trim() === '') {
-                // Do not send a greeting automatically as per "NO REPETITIVE GREETINGS" rule? 
-                // Actually the rule says "Do NOT say Hello... at the start of every message".
-                // Initial greeting is fine, but the persona rule is for the bot's behavior.
-                // However, "Treat this as an ongoing conversation".
-                // I'll keep a minimal welcome only if history is empty.
-                window.appendMessage('ai', 'DevOps Mentor online. Ready for your sitrep.');
-            }
-        }
-
         // Focus input
         setTimeout(() => {
             const input = document.getElementById('chat-user-input');
@@ -3222,173 +3205,154 @@ window.toggleChat = function () {
     }
 };
 
-window.saveChatHistory = function () {
-    const msgs = document.getElementById('chat-messages');
-    if (msgs) {
-        localStorage.setItem('devops_galaxy_chat_history', msgs.innerHTML);
-    }
-};
-
-window.loadChatHistory = function () {
-    const msgs = document.getElementById('chat-messages');
-    const saved = localStorage.getItem('devops_galaxy_chat_history');
-    if (msgs && saved && saved.trim().length > 0) {
-        msgs.innerHTML = saved;
-        msgs.scrollTop = msgs.scrollHeight;
-        return true;
-    }
-    return false;
-};
-
-window.appendMessage = function (role, html) {
+function renderMessage(text, sender) {
     const box = document.getElementById('chat-messages');
-    if (!box) return console.error("❌ Error: Chat messages box not found");
+    if (!box) return;
 
+    const role = sender === 'bot' ? 'ai' : sender;
     const d = document.createElement('div');
     d.className = `chat-msg ${role}`;
     d.dir = "auto";
-    d.innerHTML = html;
+
+    // Use marked if available and sender is bot, otherwise text
+    if (sender === 'bot' && typeof marked !== 'undefined') {
+        d.innerHTML = marked.parse(text);
+    } else {
+        d.textContent = text;
+    }
 
     box.appendChild(d);
     box.scrollTop = box.scrollHeight;
-    window.saveChatHistory();
-};
-
-window.initChatUI = function () {
-    // 1. Load Context History
-    try {
-        const savedContext = localStorage.getItem('devops_galaxy_chat_context');
-        if (savedContext) {
-            chatHistory = JSON.parse(savedContext);
-        }
-    } catch (e) {
-        console.error("Failed to load chat context", e);
-        chatHistory = [];
-    }
-    console.log("📜 Chat History Loaded:", chatHistory.length, "messages");
-
-    // 2. Setup Input
-    const chatInput = document.getElementById('chat-user-input');
-    if (chatInput) {
-        // Auto-expand Logic
-        chatInput.addEventListener('input', function () {
-            this.style.height = 'auto'; // Reset
-            this.style.height = (this.scrollHeight) + 'px'; // Expand
-            if (this.value === '') this.style.height = 'auto';
-        });
-
-        // "Enter" behavior: 
-        // User requested: "Ensure pressing 'Enter' creates a new line"
-        // Default textarea behavior is new line, so NO verify listener needed to prevent default.
-    }
-
-    // 3. Setup Button
-    const sendBtn = document.getElementById('send-btn');
-    if (sendBtn) {
-        sendBtn.onclick = window.sendChatMessage;
-    }
 }
 
-// Call Init on Load
-document.addEventListener('DOMContentLoaded', window.initChatUI);
+function showLoadingIndicator() {
+    const box = document.getElementById('chat-messages');
+    const d = document.createElement('div');
+    d.className = 'chat-msg ai loading-indicator';
+    const id = 'loading-' + Date.now();
+    d.id = id;
+    d.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Thinking...';
+    box.appendChild(d);
+    box.scrollTop = box.scrollHeight;
+    return id;
+}
 
+function removeLoadingIndicator(id) {
+    const el = document.getElementById(id);
+    if (el) el.remove();
+}
 
-window.sendChatMessage = async function () {
-    console.log("🚀 Action: Sending Message...");
+// ==========================================
+// 🚀 SMART CHATBOT LOGIC (Gemini 2.5 Flash)
+// ==========================================
 
-    const input = document.getElementById('chat-user-input');
-    const btn = document.getElementById('send-btn');
+// 1. Memory & Persona Setup
+if (typeof chatHistory === 'undefined') {
+    var chatHistory = [];
+}
 
-    if (!input || !btn) return console.error("❌ UI Error: Input or Button missing");
+const SYSTEM_PROMPT = `
+You are a Senior DevOps Mentor acting as a "Caring Critic".
+Your goal is the user's professional mastery.
+RULES:
+1. No "Hello" or repetitive greetings. Start directly.
+2. Be concise and direct.
+3. If user speaks Arabic, reply in Egyptian Tech Slang (يا هندسة، عاش، بص بقى).
+4. If user speaks English, reply in Professional English.
+`;
 
-    const txt = input.value.trim();
-    if (!txt) return;
+// Initialize Memory
+if (chatHistory.length === 0) {
+    chatHistory.push({ role: "user", parts: [{ text: SYSTEM_PROMPT }] });
+    chatHistory.push({ role: "model", parts: [{ text: "Understood. Ready." }] });
+}
 
-    // 1. Show User Message
-    window.appendMessage('user', txt);
-    input.value = '';
-    input.style.height = 'auto'; // Reset height
-    input.focus();
+// 2. API Call Function (Gemini 2.5 Flash)
+async function callGeminiAPI() {
+    // Use the existing firebaseConfig key
+    const API_KEY = firebaseConfig.apiKey;
 
-    // 2. Add to History
-    chatHistory.push({ role: "user", parts: [{ text: txt }] });
-    localStorage.setItem('devops_galaxy_chat_context', JSON.stringify(chatHistory));
+    if (!API_KEY) {
+        console.error("API Key is missing!");
+        throw new Error("API Key is missing in firebaseConfig");
+    }
 
-    // 3. Define System Prompt
-    const SYSTEM_PROMPT = `
-      You are a Senior DevOps Mentor acting as a "Caring Critic".
-      Your goal is the user's professional mastery, not just answering questions.
-      STRICT BEHAVIORAL RULES:
-      1. NO REPETITIVE GREETINGS: Do NOT say "Hello" or "Welcome" at the start of every message. Treat this as an ongoing conversation.
-      2. DIRECTNESS: Be concise. Answer the question directly then explain.
-      3. LANGUAGE MIRRORING: If user types in English -> Reply in Professional English. If user types in Arabic -> Reply in Egyptian Tech Slang.
-      4. TOUGH LOVE: If the user is wrong, correct them firmly but constructively.
-      `;
+    // Using the specific model discovered in console
+    const API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent";
 
     try {
-        // UI Loading State
-        const originalIcon = btn.innerHTML;
-        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
-        btn.disabled = true;
-
-        // 4. API Call
-        // Use existing firebaseConfig.apiKey
-        const apiKey = firebaseConfig.apiKey;
-        const model = "gemini-2.5-flash"; // Using a stable model
-
-        const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
-
-        // Construct Payload
-        // Prepend System Prompt to the conversation for the API call
-        const payloadContents = [
-            {
-                role: "user",
-                parts: [{ text: "SYSTEM_INSTRUCTION:\n" + SYSTEM_PROMPT }]
-            },
-            {
-                role: "model",
-                parts: [{ text: "Understood. I am ready." }]
-            },
-            ...chatHistory
-        ];
-
-        const response = await fetch(geminiUrl, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                contents: payloadContents
-            })
+        const response = await fetch(`${API_URL}?key=${API_KEY}`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ contents: chatHistory })
         });
 
         if (!response.ok) {
             const errData = await response.json();
-            throw new Error(`API Error ${response.status}: ${errData.error?.message || response.statusText}`);
+            throw new Error(errData.error?.message || `HTTP Error: ${response.status}`);
         }
 
         const data = await response.json();
-        const reply = data.candidates?.[0]?.content?.parts?.[0]?.text || "System Error: No response.";
+        return data.candidates[0].content.parts[0].text;
 
-        // Format Markdown
-        let formattedReply = reply;
-        if (typeof marked !== 'undefined') {
-            formattedReply = marked.parse(reply);
-        }
-
-        window.appendMessage('ai', formattedReply);
-
-        // Add Model Reply to History & Save
-        chatHistory.push({ role: "model", parts: [{ text: reply }] });
-        localStorage.setItem('devops_galaxy_chat_context', JSON.stringify(chatHistory));
-
-    } catch (err) {
-        console.error("❌ Chat Error:", err);
-        window.appendMessage('ai', `⚠️ Error: ${err.message}`);
-    } finally {
-        btn.innerHTML = '<i class="fas fa-paper-plane"></i>';
-        btn.disabled = false;
-        input.focus();
+    } catch (error) {
+        console.error("Gemini API Error:", error);
+        throw error;
     }
-};
+}
+
+// 3. Send Message & UI Logic
+async function sendMessage() {
+    const chatInput = document.getElementById('chat-user-input');
+    const message = chatInput.value.trim();
+
+    if (!message) return;
+
+    // Render User Message
+    renderMessage(message, 'user');
+    chatInput.value = '';
+    chatInput.style.height = 'auto';
+
+    // Add to History
+    chatHistory.push({ role: "user", parts: [{ text: message }] });
+
+    // Show Loading
+    const loadingId = showLoadingIndicator();
+
+    try {
+        const reply = await callGeminiAPI();
+        removeLoadingIndicator(loadingId);
+
+        // Render Bot Reply
+        renderMessage(reply, 'bot');
+        chatHistory.push({ role: "model", parts: [{ text: reply }] });
+
+    } catch (error) {
+        removeLoadingIndicator(loadingId);
+        renderMessage(`System Error: ${error.message}.`, 'bot');
+    }
+}
+
+// 4. Event Listeners
+const sendBtn = document.getElementById('send-btn');
+if (sendBtn) {
+    sendBtn.onclick = sendMessage;
+}
+
+const chatInput = document.getElementById('chat-user-input');
+if (chatInput) {
+    chatInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            sendMessage();
+        }
+    });
+
+    chatInput.addEventListener('input', function () {
+        this.style.height = 'auto';
+        this.style.height = (this.scrollHeight) + 'px';
+    });
+}
 
 // =========================================
 // 💡 SMART DEVOPS TIPS (Rotates every 3 Hours)

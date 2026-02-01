@@ -2386,25 +2386,20 @@ body.edit-mode #ai-chat-window {
     background: rgba(0, 0, 0, 0.6);
 }
 
-#chat-input {
+#chat-user-input {
     width: 100%;
     background: transparent;
     border: none;
-    color: white;
-    font-family: var(--font-heading);
+    outline: none;
+    color: var(--text-color);
+    font-family: var(--font-body);
     font-size: 0.95rem;
     resize: none;
-    overflow-y: hidden;
-    max-height: 120px;
-    min-height: 24px;
+    /* Important for auto-grow */
+    max-height: 150px;
+    padding: 0;
+    margin: 0;
     line-height: 1.5;
-    padding: 0 5px;
-    /* Added internal padding */
-    margin-left: 5px;
-    /* Extra nudge from the start */
-}
-
-#chat-input:focus {
     outline: none;
 }
 

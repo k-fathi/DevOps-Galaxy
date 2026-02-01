@@ -1,4 +1,4 @@
-let chatHistory = [];
+
 // --- 1. CONFIGURATION ---
 const firebaseConfig = {
     apiKey: "AIzaSyCaLP4Ng0pe8AlX_0KUxgkfg7Kv9YA3nhY",
@@ -1037,7 +1037,6 @@ function setupIconListeners() {
 document.addEventListener('DOMContentLoaded', () => {
     setupIconListeners();
     loadSimpleIconsIndex(); // Pre-load for faster searches
-    initAIChat();
 });
 
 function editNode(node) {
@@ -3185,10 +3184,9 @@ function calculateTotalLogs() {
 // 🤖 REFACORTED CHATBOT LOGIC (GLOBAL SCOPE)
 // =========================================
 
-const CHAT_API_KEY = "AIzaSyDf9SPb1_vItDjUIWpqcQO5Sg9xAkrsGk8";
-const CHAT_MODEL = "gemini-2.5-flash"; // Updated Model Name
+// Global Chat History (Context)
+let chatHistory = [];
 
-// 1. MAKE FUNCTIONS GLOBALLY ACCESSIBLE
 window.toggleChat = function () {
     const win = document.getElementById('ai-chat-window');
     const btn = document.getElementById('chatbot-trigger');
@@ -3196,32 +3194,32 @@ window.toggleChat = function () {
     if (!win) return;
 
     if (win.classList.contains('visible')) {
-
         win.classList.remove('visible');
-
-
         if (btn) btn.classList.remove('pushed-down');
-
     } else {
-
         win.classList.add('visible');
-
-
         if (btn) btn.classList.add('pushed-down');
 
-
+        // Initialize UI if needed
         const msgs = document.getElementById('chat-messages');
         if (msgs) {
             const hasHistory = window.loadChatHistory();
             if (!hasHistory && msgs.innerHTML.trim() === '') {
-                window.appendMessage('ai', 'Hello Geek! Ask me anything about DevOps.');
+                // Do not send a greeting automatically as per "NO REPETITIVE GREETINGS" rule? 
+                // Actually the rule says "Do NOT say Hello... at the start of every message".
+                // Initial greeting is fine, but the persona rule is for the bot's behavior.
+                // However, "Treat this as an ongoing conversation".
+                // I'll keep a minimal welcome only if history is empty.
+                window.appendMessage('ai', 'DevOps Mentor online. Ready for your sitrep.');
             }
         }
-    }
-};
 
-window.handleChatKey = function (e) {
-    if (e.key === 'Enter') window.sendChatMessage();
+        // Focus input
+        setTimeout(() => {
+            const input = document.getElementById('chat-user-input');
+            if (input) input.focus();
+        }, 300);
+    }
 };
 
 window.saveChatHistory = function () {
@@ -3256,50 +3254,50 @@ window.appendMessage = function (role, html) {
     window.saveChatHistory();
 };
 
-// Global History
-let conversationHistory = [];
-
 window.initChatUI = function () {
-    // 1. Load History from LocalStorage
+    // 1. Load Context History
     try {
-        const savedHistory = localStorage.getItem('devops_galaxy_chat_context');
-        if (savedHistory) {
-            conversationHistory = JSON.parse(savedHistory);
+        const savedContext = localStorage.getItem('devops_galaxy_chat_context');
+        if (savedContext) {
+            chatHistory = JSON.parse(savedContext);
         }
     } catch (e) {
-        console.error("Failed to load chat history", e);
-        conversationHistory = [];
+        console.error("Failed to load chat context", e);
+        chatHistory = [];
     }
-    console.log("📜 Chat History Loaded:", conversationHistory.length, "messages");
-    const chatInput = document.getElementById('chat-input');
+    console.log("📜 Chat History Loaded:", chatHistory.length, "messages");
+
+    // 2. Setup Input
+    const chatInput = document.getElementById('chat-user-input');
     if (chatInput) {
         // Auto-expand Logic
         chatInput.addEventListener('input', function () {
             this.style.height = 'auto'; // Reset
             this.style.height = (this.scrollHeight) + 'px'; // Expand
-            if (this.value === '') this.style.height = '24px';
+            if (this.value === '') this.style.height = 'auto';
         });
 
-        // Prevent Enter from Sending (Default behavior is Newline, offering Shift+Enter support if desired, but user wanted Enter=Newline)
-        // Ensure Enter just does New Line (default).
+        // "Enter" behavior: 
+        // User requested: "Ensure pressing 'Enter' creates a new line"
+        // Default textarea behavior is new line, so NO verify listener needed to prevent default.
     }
+
+    // 3. Setup Button
     const sendBtn = document.getElementById('send-btn');
     if (sendBtn) {
-        // Remove old listeners if any by cloning (optional, but safer to just add new one if we are sure)
-        // Here we assume fresh start or idempotent
         sendBtn.onclick = window.sendChatMessage;
     }
 }
 
-// Call Init on Load confirm
+// Call Init on Load
 document.addEventListener('DOMContentLoaded', window.initChatUI);
 
 
 window.sendChatMessage = async function () {
     console.log("🚀 Action: Sending Message...");
 
-    const input = document.getElementById('chat-input');
-    const btn = document.getElementById('send-btn'); // Corrected ID from 'chat-send-btn' to 'send-btn'
+    const input = document.getElementById('chat-user-input');
+    const btn = document.getElementById('send-btn');
 
     if (!input || !btn) return console.error("❌ UI Error: Input or Button missing");
 
@@ -3309,37 +3307,23 @@ window.sendChatMessage = async function () {
     // 1. Show User Message
     window.appendMessage('user', txt);
     input.value = '';
-    input.style.height = '24px'; // Reset height
+    input.style.height = 'auto'; // Reset height
     input.focus();
 
     // 2. Add to History
-    conversationHistory.push({ role: "user", parts: [{ text: txt }] });
-    localStorage.setItem('devops_galaxy_chat_context', JSON.stringify(conversationHistory));
+    chatHistory.push({ role: "user", parts: [{ text: txt }] });
+    localStorage.setItem('devops_galaxy_chat_context', JSON.stringify(chatHistory));
 
-    // 3. Build Context
-    let userContext = "User is a DevOps Student.";
-    if (typeof buildUserContext === 'function') {
-        userContext = buildUserContext();
-    }
-
+    // 3. Define System Prompt
     const SYSTEM_PROMPT = `
-    You are a Senior DevOps Mentor.
-    Context: ${userContext}
-    
-    Role: A Senior DevOps Engineer & "Caring Critic".
-    Goal: Transform the user into a top-tier engineer.
-
-    STRICT BEHAVIORAL RULES:
-    1. **NO FLUFF:** Do NOT use repetitive greetings ("Hello", "Welcome"). Start answering immediately.
-    2. **REALISM:** Do NOT give fake praise ("Great question", "Amazing"). Only praise exceptional insight.
-    3. **LANGUAGE:**
-       - English input -> Professional, concise English.
-       - Arabic input -> Egyptian Tech Slang ("يا هندسة", "عاش", "بص بقى").
-    4. **DIRECTNESS:** Answer the question first. Then explain context if needed.
-    5. **TOUGH LOVE:** Correct misconceptions firmly. Don't validate bad practices.
-    
-    If the user asks a question, answer it. If the user greets, acknowledge briefly and ask for status.
-    `;
+      You are a Senior DevOps Mentor acting as a "Caring Critic".
+      Your goal is the user's professional mastery, not just answering questions.
+      STRICT BEHAVIORAL RULES:
+      1. NO REPETITIVE GREETINGS: Do NOT say "Hello" or "Welcome" at the start of every message. Treat this as an ongoing conversation.
+      2. DIRECTNESS: Be concise. Answer the question directly then explain.
+      3. LANGUAGE MIRRORING: If user types in English -> Reply in Professional English. If user types in Arabic -> Reply in Egyptian Tech Slang.
+      4. TOUGH LOVE: If the user is wrong, correct them firmly but constructively.
+      `;
 
     try {
         // UI Loading State
@@ -3347,14 +3331,15 @@ window.sendChatMessage = async function () {
         btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
         btn.disabled = true;
 
-        const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${CHAT_MODEL}:generateContent?key=${CHAT_API_KEY}`;
+        // 4. API Call
+        // Use existing firebaseConfig.apiKey
+        const apiKey = firebaseConfig.apiKey;
+        const model = "gemini-1.5-flash"; // Using a stable model
 
-        // Construct Payload with History
-        // Note: Gemini API expects: contents: [ {role, parts}, {role, parts} ... ]
-        // System Prompt is usually sent as the first 'user' message or system instruction if supported. 
-        // For 'flash', we can use the first message pattern or 'system_instruction' (v1beta).
-        // Let's stick to prepending system prompt to the context for robustness.
+        const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
 
+        // Construct Payload
+        // Prepend System Prompt to the conversation for the API call
         const payloadContents = [
             {
                 role: "user",
@@ -3362,9 +3347,9 @@ window.sendChatMessage = async function () {
             },
             {
                 role: "model",
-                parts: [{ text: "Understood. I am ready to be a Senior DevOps Mentor." }]
+                parts: [{ text: "Understood. I am ready." }]
             },
-            ...conversationHistory
+            ...chatHistory
         ];
 
         const response = await fetch(geminiUrl, {
@@ -3392,64 +3377,18 @@ window.sendChatMessage = async function () {
         window.appendMessage('ai', formattedReply);
 
         // Add Model Reply to History & Save
-        conversationHistory.push({ role: "model", parts: [{ text: reply }] });
-        localStorage.setItem('devops_galaxy_chat_context', JSON.stringify(conversationHistory));
+        chatHistory.push({ role: "model", parts: [{ text: reply }] });
+        localStorage.setItem('devops_galaxy_chat_context', JSON.stringify(chatHistory));
 
     } catch (err) {
         console.error("❌ Chat Error:", err);
         window.appendMessage('ai', `⚠️ Error: ${err.message}`);
-        // Remove failed user message from history to prevent sync issues? 
-        // Maybe better to keep it or handle retry. For now, we leave it.
     } finally {
         btn.innerHTML = '<i class="fas fa-paper-plane"></i>';
         btn.disabled = false;
         input.focus();
     }
 };
-
-
-window.buildUserContext = function () {
-    // Safety check: if user isn't logged in yet
-    if (typeof userData === 'undefined' || !userData) {
-        return "User is currently a guest (not logged in).";
-    }
-
-    // 1. Basic Identity
-    let context = `User Name: ${userData.displayName || "Commander"}\n`;
-    context += `Overall Course Progress: ${userData.totalPercent || 0}%\n`;
-
-    // 2. Add Captain's Logs (Diary Entries)
-    let logsText = "";
-    if (userData.logs) {
-        // Flatten all logs from different nodes into one list
-        const allLogs = Object.values(userData.logs).flat();
-        // Take the last 5 logs to avoid overwhelming the AI
-        allLogs.slice(-5).forEach(log => {
-            if (log.text) logsText += `- [${log.date.split('T')[0]}]: ${log.text}\n`;
-        });
-    }
-    if (logsText) {
-        context += `\n[User's Recent Captain's Logs]:\n${logsText}`;
-    }
-
-    // 3. Add Specific Topic Notes
-    let notesText = "";
-    if (userData.progress) {
-        Object.entries(userData.progress).forEach(([key, val]) => {
-            // Check for keys ending in '_notes' (e.g., '1_t1-a1_notes')
-            if (key.endsWith('_notes') && typeof val === 'string' && val.trim().length > 0) {
-                notesText += `- Note: ${val}\n`;
-            }
-        });
-    }
-    if (notesText) {
-        context += `\n[User's Study Notes]:\n${notesText}`;
-    }
-
-    return context;
-};
-
-
 
 // =========================================
 // 💡 SMART DEVOPS TIPS (Rotates every 3 Hours)
@@ -3472,29 +3411,17 @@ function updateDevOpsTip() {
     const tipElement = document.getElementById('tip-text');
     if (!tipElement) return;
 
-    // 1. حساب الوقت الحالي بالمللي ثانية
     const now = Date.now();
-
-    // 2. مدة كل نصيحة (3 ساعات)
     const durationPerTip = 3 * 60 * 60 * 1000;
-
-    // 3. المعادلة السحرية (Modulo Operator)
-    // بتقسم الوقت الحالي على 3 ساعات، وناخد الباقي عشان نحدد الاندكس (0-9)
     const tipIndex = Math.floor(now / durationPerTip) % devopsTipsList.length;
 
-    // 4. التحديث
     tipElement.innerText = `"${devopsTipsList[tipIndex]}"`;
 }
 
-// التشغيل فوراً عند التحميل
 document.addEventListener('DOMContentLoaded', () => {
     updateDevOpsTip();
-    // فحص كل دقيقة للتحديث لو المستخدم فاتح الصفحة فترة طويلة
     setInterval(updateDevOpsTip, 60000);
 });
-
-
-// End of Script
 
 
 

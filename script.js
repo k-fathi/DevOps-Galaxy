@@ -1,7 +1,7 @@
 let chatHistory = [];
 // --- 1. CONFIGURATION ---
 const firebaseConfig = {
-    apiKey: "AIzaSyAbys42NvBFODlC631hsCcxHzhbIMg1zt0",
+    apiKey: "AIzaSyCaLP4Ng0pe8AlX_0KUxgkfg7Kv9YA3nhY",
     authDomain: "devops-roadmap-x3.firebaseapp.com",
     projectId: "devops-roadmap-x3",
     storageBucket: "devops-roadmap-x3.firebasestorage.app",
@@ -3185,8 +3185,8 @@ function calculateTotalLogs() {
 // 🤖 REFACORTED CHATBOT LOGIC (GLOBAL SCOPE)
 // =========================================
 
-const CHAT_API_KEY = "AIzaSyAbys42NvBFODlC631hsCcxHzhbIMg1zt0";
-const CHAT_MODEL = "gemini-2.5-flash"; // Fixed Model Name
+const CHAT_API_KEY = "AIzaSyDf9SPb1_vItDjUIWpqcQO5Sg9xAkrsGk8";
+const CHAT_MODEL = "gemini-2.5-flash"; // Updated Model Name
 
 // 1. MAKE FUNCTIONS GLOBALLY ACCESSIBLE
 window.toggleChat = function () {
@@ -3256,11 +3256,50 @@ window.appendMessage = function (role, html) {
     window.saveChatHistory();
 };
 
+// Global History
+let conversationHistory = [];
+
+window.initChatUI = function () {
+    // 1. Load History from LocalStorage
+    try {
+        const savedHistory = localStorage.getItem('devops_galaxy_chat_context');
+        if (savedHistory) {
+            conversationHistory = JSON.parse(savedHistory);
+        }
+    } catch (e) {
+        console.error("Failed to load chat history", e);
+        conversationHistory = [];
+    }
+    console.log("📜 Chat History Loaded:", conversationHistory.length, "messages");
+    const chatInput = document.getElementById('chat-input');
+    if (chatInput) {
+        // Auto-expand Logic
+        chatInput.addEventListener('input', function () {
+            this.style.height = 'auto'; // Reset
+            this.style.height = (this.scrollHeight) + 'px'; // Expand
+            if (this.value === '') this.style.height = '24px';
+        });
+
+        // Prevent Enter from Sending (Default behavior is Newline, offering Shift+Enter support if desired, but user wanted Enter=Newline)
+        // Ensure Enter just does New Line (default).
+    }
+    const sendBtn = document.getElementById('send-btn');
+    if (sendBtn) {
+        // Remove old listeners if any by cloning (optional, but safer to just add new one if we are sure)
+        // Here we assume fresh start or idempotent
+        sendBtn.onclick = window.sendChatMessage;
+    }
+}
+
+// Call Init on Load confirm
+document.addEventListener('DOMContentLoaded', window.initChatUI);
+
+
 window.sendChatMessage = async function () {
     console.log("🚀 Action: Sending Message...");
 
     const input = document.getElementById('chat-input');
-    const btn = document.getElementById('chat-send-btn');
+    const btn = document.getElementById('send-btn'); // Corrected ID from 'chat-send-btn' to 'send-btn'
 
     if (!input || !btn) return console.error("❌ UI Error: Input or Button missing");
 
@@ -3270,10 +3309,15 @@ window.sendChatMessage = async function () {
     // 1. Show User Message
     window.appendMessage('user', txt);
     input.value = '';
+    input.style.height = '24px'; // Reset height
+    input.focus();
 
-    // 2. Build Context
+    // 2. Add to History
+    conversationHistory.push({ role: "user", parts: [{ text: txt }] });
+    localStorage.setItem('devops_galaxy_chat_context', JSON.stringify(conversationHistory));
+
+    // 3. Build Context
     let userContext = "User is a DevOps Student.";
-    // Check if context builder exists globally
     if (typeof buildUserContext === 'function') {
         userContext = buildUserContext();
     }
@@ -3281,17 +3325,20 @@ window.sendChatMessage = async function () {
     const SYSTEM_PROMPT = `
     You are a Senior DevOps Mentor.
     Context: ${userContext}
-    You are a Senior DevOps Mentor acting as a "Caring Critic".
-Your goal is the user's professional mastery, not just answering questions.
+    
+    Role: A Senior DevOps Engineer & "Caring Critic".
+    Goal: Transform the user into a top-tier engineer.
 
-STRICT BEHAVIORAL RULES:
-1. **NO REPETITIVE GREETINGS:** Do NOT say "Hello", "Welcome", or "Ahlan" at the start of every message. Treat this as an ongoing conversation.
-2. **NO FAKE PRAISE (NO "TBAL"):** Never say "Deep understanding" or "Great job" for simple questions. Be realistic. If the user is at 1%, tell them "Good start, but we have a long way to go." Praise only earned milestones.
-3. **LANGUAGE MIRRORING:**
-   - If the user types in **English** -> Reply in **English** (Professional & Concise).
-   - If the user types in **Arabic** -> Reply in **Arabic** (Egyptian Tech Slang: "يا هندسة", "عاش", "بص بقى").
-4. **DIRECTNESS:** Be concise. Cut the fluff. Answer the question directly then explain the concept.
-5. **TOUGH LOVE:** If the user is wrong, correct them firmly but constructively. Do not validate bad practices.
+    STRICT BEHAVIORAL RULES:
+    1. **NO FLUFF:** Do NOT use repetitive greetings ("Hello", "Welcome"). Start answering immediately.
+    2. **REALISM:** Do NOT give fake praise ("Great question", "Amazing"). Only praise exceptional insight.
+    3. **LANGUAGE:**
+       - English input -> Professional, concise English.
+       - Arabic input -> Egyptian Tech Slang ("يا هندسة", "عاش", "بص بقى").
+    4. **DIRECTNESS:** Answer the question first. Then explain context if needed.
+    5. **TOUGH LOVE:** Correct misconceptions firmly. Don't validate bad practices.
+    
+    If the user asks a question, answer it. If the user greets, acknowledge briefly and ask for status.
     `;
 
     try {
@@ -3302,14 +3349,29 @@ STRICT BEHAVIORAL RULES:
 
         const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${CHAT_MODEL}:generateContent?key=${CHAT_API_KEY}`;
 
+        // Construct Payload with History
+        // Note: Gemini API expects: contents: [ {role, parts}, {role, parts} ... ]
+        // System Prompt is usually sent as the first 'user' message or system instruction if supported. 
+        // For 'flash', we can use the first message pattern or 'system_instruction' (v1beta).
+        // Let's stick to prepending system prompt to the context for robustness.
+
+        const payloadContents = [
+            {
+                role: "user",
+                parts: [{ text: "SYSTEM_INSTRUCTION:\n" + SYSTEM_PROMPT }]
+            },
+            {
+                role: "model",
+                parts: [{ text: "Understood. I am ready to be a Senior DevOps Mentor." }]
+            },
+            ...conversationHistory
+        ];
+
         const response = await fetch(geminiUrl, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-                contents: [{
-                    role: "user",
-                    parts: [{ text: SYSTEM_PROMPT + "\n\nUser Question: " + txt }]
-                }]
+                contents: payloadContents
             })
         });
 
@@ -3329,9 +3391,15 @@ STRICT BEHAVIORAL RULES:
 
         window.appendMessage('ai', formattedReply);
 
+        // Add Model Reply to History & Save
+        conversationHistory.push({ role: "model", parts: [{ text: reply }] });
+        localStorage.setItem('devops_galaxy_chat_context', JSON.stringify(conversationHistory));
+
     } catch (err) {
         console.error("❌ Chat Error:", err);
         window.appendMessage('ai', `⚠️ Error: ${err.message}`);
+        // Remove failed user message from history to prevent sync issues? 
+        // Maybe better to keep it or handle retry. For now, we leave it.
     } finally {
         btn.innerHTML = '<i class="fas fa-paper-plane"></i>';
         btn.disabled = false;
@@ -3426,101 +3494,7 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 
-function initAIChat() {
-    const chatInput = document.getElementById('chat-input');
-    const sendBtn = document.getElementById('send-btn');
-
-    if (!chatInput || !sendBtn) return; // حماية عشان لو العناصر مش موجودة الكود ميضربش
-
-    // 1. UI Logic: Auto-expand Textarea
-    chatInput.addEventListener('input', function () {
-        this.style.height = 'auto'; // Reset height
-        this.style.height = (this.scrollHeight) + 'px'; // Set to content height
-
-        // لو الكلام قل، نرجع للطول الأصلي
-        if (this.value === '') {
-            this.style.height = '40px'; // نفس الـ min-height اللي في CSS
-        }
-    });
-
-    // 2. UX Logic: Click to Send ONLY
-    // احنا مش محتاجين نعمل Handle للـ Enter لأنه طبيعي بينزل سطر في الـ Textarea
-    // بس محتاجين نتأكد إن الزرار هو اللي بيبعت
-    sendBtn.addEventListener('click', () => {
-        handleUserMessage();
-    });
-}
-
-
-async function handleUserMessage() {
-    const chatInput = document.getElementById('chat-input');
-    const userText = chatInput.value.trim();
-    const chatContainer = document.querySelector('.chat-history-container'); // تأكد إن ده الـ Class بتاع الحاوية في HTML
-
-    if (!userText) return;
-
-    // 1. UI: Show User Message
-    appendMessageToUI('user', userText);
-
-    // 2. Clear Input & Reset Height
-    chatInput.value = '';
-    chatInput.style.height = '40px';
-
-    // 3. Logic: Update History
-    chatHistory.push({ role: "user", content: userText });
-
-    // 4. Logic: Call AI API (Simulation)
-    // *تحذير أمني*: المفروض الـ Call ده يحصل في Backend عشان المفاتيح متتسرقش
-    // بس عشان انت بتتعلم دلوقتي، دي الطريقة:
-
-    showTypingIndicator(true); // اختياري: أظهر لودينج
-
-    try {
-        // استبدل الرابط ده بالـ Endpoint الحقيقي بتاعك (OpenAI / Gemini / Local LLM)
-        const response = await fetch('https://api.openai.com/v1/chat/completions', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer YOUR_API_KEY_HERE` // <--- حط مفتاحك هنا مؤقتاً
-            },
-            body: JSON.stringify({
-                model: "gpt-4", // أو gpt-3.5-turbo
-                messages: [SYSTEM_PROMPT, ...chatHistory], // <--- هنا السر: بنبعت السيستم + التاريخ كله
-                temperature: 0.7
-            })
-        });
-
-        const data = await response.json();
-        const aiReply = data.choices[0].message.content;
-
-        // 5. Update UI & History with AI Response
-        appendMessageToUI('assistant', aiReply);
-        chatHistory.push({ role: "assistant", content: aiReply });
-
-    } catch (error) {
-        console.error("AI Error:", error);
-        appendMessageToUI('system', "Connection lost. Check console logs.");
-    } finally {
-        showTypingIndicator(false);
-    }
-}
-
-// Helper: عرض الرسالة في الشاشة
-function appendMessageToUI(sender, text) {
-    const chatContainer = document.getElementById('chat-messages-area'); // تأكد من الـ ID في الـ HTML
-    if (!chatContainer) return;
-
-    const msgDiv = document.createElement('div');
-    msgDiv.classList.add('chat-msg', sender); // css class: user or assistant
-
-    // تحويل الـ Markdown لـ HTML (بما انك ضايف مكتبة marked.js)
-    msgDiv.innerHTML = marked.parse(text);
-
-    chatContainer.appendChild(msgDiv);
-
-    // Auto-scroll to bottom
-    chatContainer.scrollTop = chatContainer.scrollHeight;
-}
+// End of Script
 
 
 

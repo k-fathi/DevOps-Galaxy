@@ -3334,7 +3334,7 @@ window.sendChatMessage = async function () {
         // 4. API Call
         // Use existing firebaseConfig.apiKey
         const apiKey = firebaseConfig.apiKey;
-        const model = "gemini-1.5-flash"; // Using a stable model
+        const model = "gemini-2.5-flash"; // Using a stable model
 
         const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
 

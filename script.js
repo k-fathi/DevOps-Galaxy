@@ -3269,19 +3269,11 @@ if (chatHistory.length === 0) {
 
 // 2. API Call Function (Gemini 2.5 Flash)
 async function callGeminiAPI() {
-    // Use the existing firebaseConfig key
-    const API_KEY = firebaseConfig.apiKey;
-
-    if (!API_KEY) {
-        console.error("API Key is missing!");
-        throw new Error("API Key is missing in firebaseConfig");
-    }
-
-    // Using the specific model discovered in console
-    const API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent";
+    // Point to Cloudflare Pages Function
+    const API_URL = "/functions/chat";
 
     try {
-        const response = await fetch(`${API_URL}?key=${API_KEY}`, {
+        const response = await fetch(API_URL, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ contents: chatHistory })

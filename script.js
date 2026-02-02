@@ -3270,7 +3270,7 @@ if (chatHistory.length === 0) {
 // 2. API Call Function (Gemini 2.5 Flash)
 async function callGeminiAPI() {
     // Point to Cloudflare Pages Function
-    const API_URL = "/functions/chat";
+    const API_URL = "/chat";
 
     try {
         const response = await fetch(API_URL, {

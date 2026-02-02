@@ -3267,16 +3267,64 @@ if (chatHistory.length === 0) {
     chatHistory.push({ role: "model", parts: [{ text: "Understood. Ready." }] });
 }
 
+// 1.5 Context Helper
+function getUserContext() {
+    try {
+        const userName = (currentUser && currentUser.displayName) ? currentUser.displayName : "Engineer";
+
+        // Calculate Progress
+        let totalTopics = 0;
+        let completedTopics = 0;
+
+        // Main Roadmap
+        roadmapNodes.forEach(node => {
+            const nodeTopics = node.topics || [];
+            totalTopics += nodeTopics.length;
+
+            const userProgress = userData.progress[node.id] || [];
+            completedTopics += userProgress.length;
+        });
+
+        // Parallel Tracks
+        parallelNodes.forEach(node => {
+            const nodeTopics = node.topics || [];
+            totalTopics += nodeTopics.length;
+
+            const userProgress = userData.progress[node.id] || [];
+            completedTopics += userProgress.length;
+        });
+
+        const percent = totalTopics > 0 ? Math.round((completedTopics / totalTopics) * 100) : 0;
+
+        return `[SYSTEM CONTEXT: User="${userName}", GlobalProgress="${completedTopics}/${totalTopics} (${percent}%)". The user is currently on the DevOps Galaxy Roadmap. Use this info to tailor your answer.]`;
+
+    } catch (e) {
+        console.warn("Context generation failed:", e);
+        return "";
+    }
+}
+
 // 2. API Call Function (Gemini 2.5 Flash)
-async function callGeminiAPI() {
+async function callGeminiAPI(contextMsg) {
     // Point to Cloudflare Pages Function
-    const API_URL = "/chat";
+    const API_URL = "/functions/chat";
+
+    // Clone history to avoid mutating the UI source
+    // Inject context into the LAST message (User's message) as a hidden prefix
+    const payloadHistory = JSON.parse(JSON.stringify(chatHistory));
+
+    if (contextMsg && payloadHistory.length > 0) {
+        const lastIdx = payloadHistory.length - 1;
+        if (payloadHistory[lastIdx].role === 'user') {
+            payloadHistory[lastIdx].parts[0].text = contextMsg + "\n\n" + payloadHistory[lastIdx].parts[0].text;
+        }
+    }
 
     try {
         const response = await fetch(API_URL, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ contents: chatHistory })
+            body: JSON.stringify({ contents: payloadHistory })
         });
 
         if (!response.ok) {
@@ -3305,14 +3353,18 @@ async function sendMessage() {
     chatInput.value = '';
     chatInput.style.height = 'auto';
 
-    // Add to History
+    // Add to History (Clean version for UI/Memory)
     chatHistory.push({ role: "user", parts: [{ text: message }] });
 
     // Show Loading
     const loadingId = showLoadingIndicator();
 
     try {
-        const reply = await callGeminiAPI();
+        // Get Live Context
+        const context = getUserContext();
+
+        // Pass context to API call (it will be injected there)
+        const reply = await callGeminiAPI(context);
         removeLoadingIndicator(loadingId);
 
         // Render Bot Reply

@@ -3307,7 +3307,7 @@ function getUserContext() {
 // 2. API Call Function (Gemini 2.5 Flash)
 async function callGeminiAPI(contextMsg) {
     // Point to Cloudflare Pages Function
-    const API_URL = "/functions/chat";
+    const API_URL = "/chat";
 
     // Clone history to avoid mutating the UI source
     // Inject context into the LAST message (User's message) as a hidden prefix

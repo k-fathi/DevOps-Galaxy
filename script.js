@@ -22,154 +22,8 @@ db.enablePersistence().catch((err) => {
     }
 });
 
-// --- 2. DATA (Initial Seed) ---
-const initialRoadmapData = [
-    {
-        id: 1, slug: "linux", title: "Linux Adminstration", topics: [
-            // Linux Admin 1 Module
-            { id: "t1-a1", title: "Permissions & Users", module: "admin-1", videoUrl: "", notes: "" },
-            { id: "t1-a2", title: "Package Management", module: "admin-1", videoUrl: "", notes: "" },
-            { id: "t1-a3", title: "Process Management", module: "admin-1", videoUrl: "", notes: "" },
-            { id: "t1-a4", title: "File System Basics", module: "admin-1", videoUrl: "", notes: "" },
-            { id: "t1-a5", title: "Shell & Environment", module: "admin-1", videoUrl: "", notes: "" },
-            // Linux Admin 2 Module
-            { id: "t1-b1", title: "SSH Security", module: "admin-2", videoUrl: "", notes: "" },
-            { id: "t1-b2", title: "IP/DNS/Ports", module: "admin-2", videoUrl: "", notes: "" },
-            { id: "t1-b3", title: "Firewalls (iptables/ufw)", module: "admin-2", videoUrl: "", notes: "" },
-            { id: "t1-b4", title: "Service Management", module: "admin-2", videoUrl: "", notes: "" },
-            { id: "t1-b5", title: "Disk & Storage", module: "admin-2", videoUrl: "", notes: "" }
-        ]
-    },
-    {
-        id: 2, slug: "gnubash", title: "Bash Scripting", topics: [
-            { id: "t2-1", title: "Variables", videoUrl: "", notes: "" },
-            { id: "t2-2", title: "Loops & Logic", videoUrl: "", notes: "" },
-            { id: "t2-3", title: "Functions", videoUrl: "", notes: "" },
-            { id: "t2-4", title: "Error Handling", videoUrl: "", notes: "" },
-            { id: "t2-5", title: "Redirection", videoUrl: "", notes: "" }
-        ]
-    },
-    {
-        id: 3, slug: "git", title: "Git & GitHub", topics: [
-            { id: "t3-1", title: "Branching", videoUrl: "", notes: "" },
-            { id: "t3-2", title: "Pull Requests", videoUrl: "", notes: "" },
-            { id: "t3-3", title: "Git Flow", videoUrl: "", notes: "" },
-            { id: "t3-4", title: "Rebase", videoUrl: "", notes: "" },
-            { id: "t3-5", title: "Hooks", videoUrl: "", notes: "" }
-        ]
-    },
-    {
-        id: 4, slug: "nginx", title: "Web Serving", topics: [
-            { id: "t4-1", title: "Nginx Basics", videoUrl: "", notes: "" },
-            { id: "t4-2", title: "Reverse Proxy", videoUrl: "", notes: "" },
-            { id: "t4-3", title: "Load Balancing", videoUrl: "", notes: "" },
-            { id: "t4-4", title: "SSL/Certbot", videoUrl: "", notes: "" },
-            { id: "t4-5", title: "Caddy", videoUrl: "", notes: "" }
-        ]
-    },
-    {
-        id: 5, slug: "docker", title: "Docker", topics: [
-            { id: "t5-1", title: "Compose", videoUrl: "", notes: "" },
-            { id: "t5-2", title: "Multi-stage Builds", videoUrl: "", notes: "" },
-            { id: "t5-3", title: "Networking", videoUrl: "", notes: "" },
-            { id: "t5-4", title: "Volumes", videoUrl: "", notes: "" },
-            { id: "t5-5", title: "Registry", videoUrl: "", notes: "" }
-        ]
-    },
-    {
-        id: 6, slug: "kubernetes", title: "Kubernetes", topics: [
-            { id: "t6-1", title: "Architecture", videoUrl: "", notes: "" },
-            { id: "t6-2", title: "K3s/Minikube", videoUrl: "", notes: "" },
-            { id: "t6-3", title: "EKS/GKE", videoUrl: "", notes: "" },
-            { id: "t6-4", title: "Helm", videoUrl: "", notes: "" },
-            { id: "t6-5", title: "RBAC", videoUrl: "", notes: "" }
-        ]
-    },
-    {
-        id: 7, slug: "argo", title: "GitOps", topics: [
-            { id: "t7-1", title: "ArgoCD Basics", videoUrl: "", notes: "" },
-            { id: "t7-2", title: "App of Apps", videoUrl: "", notes: "" },
-            { id: "t7-3", title: "Sync Policies", videoUrl: "", notes: "" }
-        ]
-    },
-    {
-        id: 8, slug: "prometheus", title: "Observability", topics: [
-            // Prometheus Module
-            { id: "t8-p1", title: "Installation & Setup", module: "prometheus", videoUrl: "", notes: "" },
-            { id: "t8-p2", title: "PromQL Basics", module: "prometheus", videoUrl: "", notes: "" },
-            { id: "t8-p3", title: "Exporters", module: "prometheus", videoUrl: "", notes: "" },
-            { id: "t8-p4", title: "Service Discovery", module: "prometheus", videoUrl: "", notes: "" },
-            { id: "t8-p5", title: "AlertManager", module: "prometheus", videoUrl: "", notes: "" },
-            // Grafana Module
-            { id: "t8-g1", title: "Dashboard Basics", module: "grafana", videoUrl: "", notes: "" },
-            { id: "t8-g2", title: "Data Sources", module: "grafana", videoUrl: "", notes: "" },
-            { id: "t8-g3", title: "Panels & Variables", module: "grafana", videoUrl: "", notes: "" },
-            { id: "t8-g4", title: "Alerting in Grafana", module: "grafana", videoUrl: "", notes: "" },
-            // ELK Module
-            { id: "t8-e1", title: "Elasticsearch Setup", module: "elk", videoUrl: "", notes: "" },
-            { id: "t8-e2", title: "Logstash Pipelines", module: "elk", videoUrl: "", notes: "" },
-            { id: "t8-e3", title: "Kibana Dashboards", module: "elk", videoUrl: "", notes: "" }
-        ]
-    },
-    {
-        id: 9, slug: "jenkins", title: "CI/CD", topics: [
-            // Jenkins Module
-            { id: "t9-j1", title: "Jenkins Installation", module: "jenkins", videoUrl: "", notes: "" },
-            { id: "t9-j2", title: "Freestyle Jobs", module: "jenkins", videoUrl: "", notes: "" },
-            { id: "t9-j3", title: "Pipeline as Code", module: "jenkins", videoUrl: "", notes: "" },
-            { id: "t9-j4", title: "Jenkinsfile Syntax", module: "jenkins", videoUrl: "", notes: "" },
-            { id: "t9-j5", title: "Plugins & Agents", module: "jenkins", videoUrl: "", notes: "" },
-            // GitHub Actions Module
-            { id: "t9-g1", title: "Workflow Basics", module: "github-actions", videoUrl: "", notes: "" },
-            { id: "t9-g2", title: "YAML Syntax", module: "github-actions", videoUrl: "", notes: "" },
-            { id: "t9-g3", title: "Secrets & Env", module: "github-actions", videoUrl: "", notes: "" },
-            { id: "t9-g4", title: "Matrix Builds", module: "github-actions", videoUrl: "", notes: "" },
-            { id: "t9-g5", title: "Reusable Workflows", module: "github-actions", videoUrl: "", notes: "" },
-            // GitLab CI Module
-            { id: "t9-l1", title: "GitLab Runner", module: "gitlab-ci", videoUrl: "", notes: "" },
-            { id: "t9-l2", title: ".gitlab-ci.yml", module: "gitlab-ci", videoUrl: "", notes: "" },
-            { id: "t9-l3", title: "Stages & Jobs", module: "gitlab-ci", videoUrl: "", notes: "" },
-            { id: "t9-l4", title: "Artifacts & Cache", module: "gitlab-ci", videoUrl: "", notes: "" },
-            // General CI/CD Concepts
-            { id: "t9-c1", title: "Blue/Green Deploy", module: "concepts", videoUrl: "", notes: "" },
-            { id: "t9-c2", title: "Canary Releases", module: "concepts", videoUrl: "", notes: "" }
-        ]
-    },
-    {
-        id: 10, slug: "https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/cloudstream.svg", title: "Cloud", topics: [
-            { id: "t10-1", title: "EC2 & VPC", videoUrl: "", notes: "" },
-            { id: "t10-2", title: "S3", videoUrl: "", notes: "" },
-            { id: "t10-3", title: "IAM", videoUrl: "", notes: "" },
-            { id: "t10-4", title: "RDS", videoUrl: "", notes: "" },
-            { id: "t10-5", title: "Route53", videoUrl: "", notes: "" }
-        ]
-    },
-    {
-        id: 11, slug: "terraform", title: "Terraform", topics: [
-            { id: "t11-1", title: "HCL Syntax", videoUrl: "", notes: "" },
-            { id: "t11-2", title: "State Mgmt", videoUrl: "", notes: "" },
-            { id: "t11-3", title: "Modules", videoUrl: "", notes: "" },
-            { id: "t11-4", title: "Workspaces", videoUrl: "", notes: "" },
-            { id: "t11-5", title: "Backends", videoUrl: "", notes: "" }
-        ]
-    },
-    {
-        id: 12, slug: "https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/png/owasp-zap.png", title: "DevSecOps", topics: [
-            { id: "t12-1", title: "SonarQube", videoUrl: "", notes: "" },
-            { id: "t12-2", title: "Trivy", videoUrl: "", notes: "" },
-            { id: "t12-3", title: "Vault", videoUrl: "", notes: "" },
-            { id: "t12-4", title: "Compliance", videoUrl: "", notes: "" }
-        ]
-    },
-    {
-        id: 13, slug: "ansible", title: "Ansible", topics: [
-            { id: "t13-1", title: "Playbooks", videoUrl: "", notes: "" },
-            { id: "t13-2", title: "Roles", videoUrl: "", notes: "" },
-            { id: "t13-3", title: "Inventory", videoUrl: "", notes: "" },
-            { id: "t13-4", title: "Ansible Vault", videoUrl: "", notes: "" }
-        ]
-    }
-];
+// --- 2. DYNAMIC DATA (Fetched from Firestore) ---     
+// No hardcoded data is stored here.
 
 let roadmapNodes = []; // Fetched dynamically
 let parallelNodes = []; // Fetched dynamically
@@ -241,6 +95,7 @@ auth.onAuthStateChanged(async (user) => {
             isAdmin = true;
             const adminToggleContainer = document.getElementById('header-admin-toggle-container');
             if (adminToggleContainer) adminToggleContainer.classList.remove('hidden');
+
             console.log("Welcome Commander. Admin Mode Active.");
         }
 
@@ -255,6 +110,12 @@ auth.onAuthStateChanged(async (user) => {
 
         // 2. Load User Data
         await loadUserData(user);
+
+        // 3. Initialize Linux Roadmap Real-time Listener
+        initializeRoadmapListener();
+
+        // 4. Recalculate progress based on current roadmap
+        await recalculateGlobalProgress();
 
         renderGalaxy();
         renderParallel();
@@ -272,27 +133,476 @@ auth.onAuthStateChanged(async (user) => {
     }
 });
 
+// --- PURE FIRESTORE LISTENER (No Seeding) ---
+// Listen to Linux roadmap data in real-time
+function initializeRoadmapListener() {
+    // Listen to the Linux roadmap with real-time updates
+    db.collection('global_roadmap')
+        .where('slug', '==', 'linux')
+        .onSnapshot((snapshot) => {
+            if (snapshot.empty) {
+                console.log("📭 No data yet for Linux roadmap. Waiting for admin to add topics...");
+                window.globalRoadmapData = null;
+                return;
+            }
+
+            // Process the snapshot data
+            const linuxData = snapshot.docs[0].data();
+            window.globalRoadmapData = linuxData;
+
+            // Identify the currently active tab (default to 'admin-1')
+            const activeTab = getActiveTab() || 'admin-1';
+
+            // Render the roadmap immediately
+            renderRoadmap(activeTab);
+
+            console.log("✅ Linux roadmap data loaded and rendered.", linuxData);
+        }, (error) => {
+            console.error("⚠️ Error listening to Linux roadmap:", error);
+        });
+}
+
+// Helper function to get the currently active tab
+function getActiveTab() {
+    // Check if there's a tab selection in the UI
+    const activeTabElement = document.querySelector('.roadmap-tab.active');
+    if (activeTabElement) {
+        return activeTabElement.getAttribute('data-module');
+    }
+    // Default to 'admin-1' if no active tab is found
+    return 'admin-1';
+}
+
+// Function to render the roadmap based on active tab with accordion layout
+// Updated to target #roadmap-list as requested by user
+function renderRoadmap(module) {
+    // Safety check: Ensure data is ready
+    if (!window.globalRoadmapData) {
+        console.warn("Roadmap data not ready yet. Skipping render.");
+        return;
+    }
+
+    const topics = (window.globalRoadmapData.topics || []).filter(t => t.module === module);
+
+    // User requested to target #roadmap-list
+    let container = document.getElementById('roadmap-list');
+
+    // Fallback if #roadmap-list doesn't exist but #roadmap-topics-container does (compatibility)
+    if (!container) {
+        container = document.getElementById('roadmap-topics-container');
+    }
+
+    if (!container) {
+        console.warn("Target container (#roadmap-list) not found in DOM.");
+        return;
+    }
+
+    container.innerHTML = '';
+
+    if (topics.length === 0) {
+        container.innerHTML = '<p style="color: var(--text-muted); text-align: center; padding: 20px;">No topics in this module yet.</p>';
+        return;
+    }
+
+    // Group topics by chapter
+    const chapterMap = new Map();
+    topics.forEach(topic => {
+        const chapter = topic.chapter || 'General Topics';
+        if (!chapterMap.has(chapter)) {
+            chapterMap.set(chapter, []);
+        }
+        chapterMap.get(chapter).push(topic);
+    });
+
+    // Render each chapter as an accordion
+    chapterMap.forEach((chapterTopics, chapterName) => {
+        // Calculate chapter progress using EXISTING helper (userData)
+        const completedCount = chapterTopics.filter(t => isTopicComplete(t.id)).length;
+        const totalCount = chapterTopics.length;
+        const progressText = `${completedCount}/${totalCount}`; // Keep matching format
+
+        // Create accordion container
+        const accordion = document.createElement('div');
+        accordion.className = 'chapter-accordion';
+
+        // Create header
+        const header = document.createElement('div');
+        header.className = 'chapter-header';
+
+        // Build header HTML with conditional delete button for admin
+        let headerHTML = `
+            <div style="display: flex; align-items: center; gap: 12px; flex: 1;">
+                <i class="fas fa-chevron-down chapter-chevron"></i>
+                <span class="chapter-title">${chapterName}</span>
+            </div>
+            <span class="chapter-progress">${progressText} Completed</span>
+        `;
+
+        // Add delete button if admin
+        if (isAdmin) {
+            headerHTML += `
+                <button class="delete-chapter-btn" data-chapter="${chapterName}" data-module="${module}">
+                    <i class="fas fa-trash"></i>
+                    Delete
+                </button>
+            `;
+        }
+
+        header.innerHTML = headerHTML;
+
+        // Create body (collapsible content)
+        const body = document.createElement('div');
+        body.className = 'chapter-body';
+
+        // Add topics to body
+        chapterTopics.forEach(topic => {
+            const topicDiv = document.createElement('div');
+            // Use .topic-item as requested in CSS
+            topicDiv.className = 'topic-item';
+
+            // Simplified structure: removed item-header wrapper to let flexbox work directly on topic-item
+            topicDiv.innerHTML = `
+                <div class="topic-checkbox">
+                    <input type="checkbox" id="${topic.id}" ${isTopicComplete(topic.id) ? 'checked' : ''} onchange="toggleTopicComplete('${topic.id}')">
+                </div>
+                <label for="${topic.id}" class="topic-title">${topic.title}</label>
+            `;
+            body.appendChild(topicDiv);
+        });
+
+        if (isAdmin) {
+            console.log(`Rendering Chapter: ${chapterName} with Delete Button`);
+        }
+
+        // Add click handler to toggle accordion
+        header.addEventListener('click', (e) => {
+            // Don't toggle if clicking the delete button
+            if (e.target.closest('.delete-chapter-btn')) {
+                return;
+            }
+
+            const isExpanded = accordion.classList.contains('expanded');
+            accordion.classList.toggle('expanded');
+
+            // Update chevron rotation
+            const chevron = header.querySelector('.chapter-chevron');
+            if (chevron) {
+                chevron.style.transform = isExpanded ? 'rotate(0deg)' : 'rotate(180deg)';
+            }
+        });
+
+        // Add delete button event listener if admin
+        if (isAdmin) {
+            const deleteBtn = header.querySelector('.delete-chapter-btn');
+            if (deleteBtn) {
+                deleteBtn.addEventListener('click', (e) => {
+                    e.stopPropagation(); // Prevent accordion toggle
+                    const chapterName = deleteBtn.getAttribute('data-chapter');
+                    const moduleName = deleteBtn.getAttribute('data-module');
+                    deleteChapter(chapterName, moduleName);
+                });
+            }
+        }
+
+        // Assemble accordion
+        accordion.appendChild(header);
+        accordion.appendChild(body);
+        container.appendChild(accordion);
+    });
+}
+function isTopicComplete(topicId) {
+    if (!userData || !userData.progress) return false;
+    const linuxProgress = userData.progress['linux'] || [];
+    return linuxProgress.includes(topicId);
+}
+
+// Toggle topic completion status
+async function toggleTopicComplete(topicId) {
+    if (!currentUser) return;
+
+    const linuxProgress = userData.progress['linux'] || [];
+    const index = linuxProgress.indexOf(topicId);
+
+    if (index > -1) {
+        // Remove from completed
+        linuxProgress.splice(index, 1);
+    } else {
+        // Add to completed
+        linuxProgress.push(topicId);
+    }
+
+    userData.progress['linux'] = linuxProgress;
+
+    // Update Firestore
+    await db.collection('users').doc(currentUser.uid).update({
+        'progress.linux': linuxProgress
+    });
+
+    // Recalculate global progress
+    await recalculateGlobalProgress();
+
+    // Update chapter progress indicators in the accordion
+    updateChapterProgress();
+
+    console.log(`✅ Topic ${topicId} toggled.`);
+}
+
+// Helper function to update chapter progress indicators without full re-render
+function updateChapterProgress() {
+    if (!window.globalRoadmapData) return;
+
+    document.querySelectorAll('.chapter-accordion').forEach(accordion => {
+        const chapterTitle = accordion.querySelector('.chapter-title').textContent;
+        const chapterTopics = (window.globalRoadmapData.topics || []).filter(t => t.chapter === chapterTitle);
+
+        const completedCount = chapterTopics.filter(t => isTopicComplete(t.id)).length;
+        const totalCount = chapterTopics.length;
+
+        const progressElement = accordion.querySelector('.chapter-progress');
+        if (progressElement) {
+            progressElement.textContent = `${completedCount}/${totalCount} Completed`;
+        }
+    });
+}
+
+// Delete entire chapter (Admin Only)
+async function deleteChapter(chapterName, moduleName) {
+    if (!isAdmin) {
+        console.warn('⚠️ Only admins can delete chapters');
+        return;
+    }
+
+    // Check if we have a valid modal node open
+    if (!currentModalNode) {
+        alert('❌ No course selected. Please open a course first.');
+        return;
+    }
+
+    // Confirm with user
+    const confirmMessage = `Are you sure you want to delete the entire chapter "${chapterName}" and all its topics?\n\nThis action cannot be undone.`;
+    if (!confirm(confirmMessage)) {
+        return;
+    }
+
+    try {
+        const currentTopics = currentModalNode.topics || [];
+
+        // Filter out all topics that match both chapterName and moduleName (or just chapter if no module)
+        const filteredTopics = currentTopics.filter(topic => {
+            const topicChapter = topic.chapter || topic.section || 'General Topics';
+            // If moduleName is provided, match both chapter and module
+            if (moduleName && moduleName !== 'undefined' && moduleName !== 'null') {
+                return !(topicChapter === chapterName && topic.module === moduleName);
+            }
+            // Otherwise just match chapter name
+            return topicChapter !== chapterName;
+        });
+
+        const deletedCount = currentTopics.length - filteredTopics.length;
+
+        if (deletedCount === 0) {
+            alert('⚠️ No topics found in this chapter');
+            return;
+        }
+
+        // Update local data
+        currentModalNode.topics = filteredTopics;
+
+        // Save to Firestore using the correct collection
+        const col = currentModalNode.id.toString().startsWith('p') ? 'global_parallel' : 'global_roadmap';
+        await db.collection(col).doc(currentModalNode.id.toString()).update({
+            topics: filteredTopics
+        });
+
+        console.log(`✅ Deleted ${deletedCount} topics from chapter "${chapterName}"`);
+        showToast(`✅ Chapter "${chapterName}" deleted (${deletedCount} topics removed)`);
+
+        // Re-render the checklist
+        renderChecklist();
+
+    } catch (error) {
+        console.error('❌ Error deleting chapter:', error);
+        alert('Error deleting chapter: ' + error.message);
+    }
+}
+
+// Edit chapter name - Enable inline editing (Admin Only)
+function editChapterName(oldChapterName, moduleName) {
+    if (!isAdmin) {
+        console.warn('⚠️ Only admins can edit chapter names');
+        return;
+    }
+
+    if (!currentModalNode) {
+        alert('❌ No course selected. Please open a course first.');
+        return;
+    }
+
+    // Find the chapter title element
+    const titleId = `chapter-title-${oldChapterName.replace(/\s+/g, '-')}`;
+    const titleSpan = document.getElementById(titleId);
+
+    if (!titleSpan) {
+        console.error('Chapter title element not found:', titleId);
+        return;
+    }
+
+    // Create inline edit input
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.value = oldChapterName;
+    input.className = 'dark-input chapter-name-edit';
+    input.style.cssText = 'padding:5px 10px; font-size:1rem; font-weight:bold; min-width:200px; border:2px solid var(--primary); border-radius:4px;';
+
+    // Replace title span with input
+    titleSpan.replaceWith(input);
+    input.focus();
+    input.select();
+
+    // Save on Enter or blur
+    const saveEdit = async () => {
+        const newChapterName = input.value.trim();
+
+        if (!newChapterName || newChapterName === oldChapterName) {
+            // Cancelled or no change - just re-render
+            renderChecklist();
+            return;
+        }
+
+        try {
+            const currentTopics = currentModalNode.topics || [];
+            let updatedCount = 0;
+
+            // Update all topics with the old chapter name
+            currentTopics.forEach(topic => {
+                const topicChapter = topic.chapter || topic.section || 'General Topics';
+                const topicModule = topic.module || '';
+
+                // Match by chapter name and module (if module is specified)
+                if (topicChapter === oldChapterName) {
+                    if (!moduleName || moduleName === '' || topicModule === moduleName) {
+                        topic.chapter = newChapterName;
+                        updatedCount++;
+                    }
+                }
+            });
+
+            if (updatedCount === 0) {
+                showToast('⚠️ No topics found in this chapter');
+                renderChecklist();
+                return;
+            }
+
+            // Save to Firestore
+            const col = currentModalNode.id.toString().startsWith('p') ? 'global_parallel' : 'global_roadmap';
+            await db.collection(col).doc(currentModalNode.id.toString()).update({
+                topics: currentTopics
+            });
+
+            console.log(`✅ Renamed chapter "${oldChapterName}" to "${newChapterName}" (${updatedCount} topics updated)`);
+            showToast(`✅ Chapter renamed to "${newChapterName}"`);
+
+            // Re-render the checklist
+            renderChecklist();
+
+        } catch (error) {
+            console.error('❌ Error renaming chapter:', error);
+            showToast('❌ Error renaming chapter');
+            renderChecklist();
+        }
+    };
+
+    // Event listeners
+    input.addEventListener('blur', saveEdit);
+    input.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            input.blur(); // Trigger save via blur
+        }
+        if (e.key === 'Escape') {
+            renderChecklist(); // Cancel
+        }
+    });
+}
+
+// Save chapter order after drag and drop (Admin Only)
+async function saveChapterOrder(activeModule) {
+    if (!isAdmin || !currentModalNode) return;
+
+    try {
+        const listDiv = document.getElementById('checklist-items-list');
+        if (!listDiv) return;
+
+        // Get new chapter order from DOM
+        const chapterAccordions = listDiv.querySelectorAll('.chapter-accordion');
+        const newChapterOrder = [];
+
+        chapterAccordions.forEach(accordion => {
+            const chapterName = accordion.getAttribute('data-chapter');
+            if (chapterName) {
+                newChapterOrder.push(chapterName);
+            }
+        });
+
+        // Reorder topics based on new chapter order
+        const currentTopics = currentModalNode.topics || [];
+        const reorderedTopics = [];
+
+        // First, add topics in the new chapter order
+        newChapterOrder.forEach(chapterName => {
+            const chapterTopics = currentTopics.filter(t => {
+                const topicChapter = t.chapter || t.section || 'General Topics';
+                const topicModule = t.module || '';
+
+                // Only match topics for the active module
+                if (activeModule && activeModule !== '__general__') {
+                    return topicChapter === chapterName && topicModule === activeModule;
+                }
+                return topicChapter === chapterName && !topicModule;
+            });
+            reorderedTopics.push(...chapterTopics);
+        });
+
+        // Add any remaining topics that weren't in the reordered list (from other modules)
+        currentTopics.forEach(t => {
+            if (!reorderedTopics.includes(t)) {
+                reorderedTopics.push(t);
+            }
+        });
+
+        // Update local data
+        currentModalNode.topics = reorderedTopics;
+
+        // Save to Firestore
+        const col = currentModalNode.id.toString().startsWith('p') ? 'global_parallel' : 'global_roadmap';
+        await db.collection(col).doc(currentModalNode.id.toString()).update({
+            topics: reorderedTopics
+        });
+
+        console.log('✅ Chapter order saved');
+        showToast('✅ Chapter order updated');
+
+    } catch (error) {
+        console.error('❌ Error saving chapter order:', error);
+    }
+}
+
+// Legacy fetchRoadmap function kept for compatibility with existing code
 async function fetchRoadmap() {
     // 1. Fetch ALL Main Roadmap data
     const snap = await db.collection('global_roadmap').get();
 
     if (snap.empty) {
-        // 🛑 CRITICAL FIX: Removed seedDatabase() and initialRoadmapData
-        // Now it safely sets an empty array without overwriting Firestore.
         console.warn("⚠️ Main Roadmap is empty. Waiting for Admin to add courses.");
         roadmapNodes = [];
     } else {
         roadmapNodes = [];
         snap.forEach(doc => {
             const d = doc.data();
-            // Ensure ID is a number for the main roadmap
             d.id = parseInt(doc.id);
-            // Fallback: If 'order' is missing, use 999 to prevent NaN sorting
             d.order = typeof d.order === 'number' ? d.order : 999;
             roadmapNodes.push(d);
         });
-
-        // Sort safely in JavaScript instead of Firestore
         roadmapNodes.sort((a, b) => a.order - b.order);
     }
 
@@ -300,52 +610,18 @@ async function fetchRoadmap() {
     const pSnap = await db.collection('global_parallel').get();
 
     if (pSnap.empty) {
-        // 🛑 CRITICAL FIX: Removed seedParallel() and hardcoded data
         console.warn("⚠️ Parallel Tracks are empty. Waiting for Admin to add tracks.");
         parallelNodes = [];
     } else {
         parallelNodes = [];
         pSnap.forEach(doc => {
             const d = doc.data();
-            // Keep ID as string for parallel tracks (p1, p2, etc.)
             d.id = doc.id;
-            // Fallback: If 'order' is missing, use 999 to prevent NaN sorting
             d.order = typeof d.order === 'number' ? d.order : 999;
             parallelNodes.push(d);
         });
-
-        // Sort safely
         parallelNodes.sort((a, b) => a.order - b.order);
     }
-}
-
-
-
-async function seedDatabase() {
-    // Seed main roadmap
-    const batch = db.batch();
-    initialRoadmapData.forEach(node => {
-        const ref = db.collection('global_roadmap').doc(node.id.toString());
-        batch.set(ref, node);
-    });
-    await batch.commit();
-    console.log("Main roadmap seeded.");
-}
-
-async function seedParallel() {
-    const parallelData = [
-        { id: "p1", slug: "nodedotjs", title: "Node.js (Backend)", topics: [{ id: "pt1", title: "Event Loop" }, { id: "pt2", title: "Express" }] },
-        { id: "p2", slug: "python", title: "Python & Go", topics: [{ id: "pt3", title: "Syntax" }, { id: "pt4", title: "Requests" }] },
-        { id: "p3", slug: "postgresql", title: "Databases Ops", topics: [{ id: "pt5", title: "PostgreSQL" }, { id: "pt6", title: "Redis" }] },
-        { id: "p4", slug: "n8n", title: "n8n Automation", topics: [{ id: "pt7", title: "Workflows" }, { id: "pt8", title: "Webhooks" }] }
-    ];
-    const batch = db.batch();
-    parallelData.forEach(node => {
-        const ref = db.collection('global_parallel').doc(node.id);
-        batch.set(ref, node);
-    });
-    await batch.commit();
-    console.log("Parallel nodes seeded.");
 }
 
 async function loadUserData(user) {
@@ -357,9 +633,7 @@ async function loadUserData(user) {
         if (!userData.proofs) userData.proofs = {};
         if (!userData.progress) userData.progress = {};
 
-        // Calculate Global Progress for Header
-        const totalP = userData.totalPercent || 0;
-        document.getElementById('user-name-display').innerHTML = `👨‍🚀 ${userData.displayName} <span style="color:var(--gold); font-size:0.8rem; margin-left:5px;">(${totalP}%)</span>`;
+        // Note: totalPercent will be recalculated after roadmap loads
 
         userData.vaultName = localStorage.getItem('obsidianVault') || "";
     } else {
@@ -379,6 +653,40 @@ async function loadUserData(user) {
         userData.joinedDate = new Date(earliest).toISOString();
         await db.collection('users').doc(user.uid).update({ joinedDate: userData.joinedDate });
     }
+}
+
+async function recalculateGlobalProgress() {
+    if (!currentUser) return 0;
+
+    // Count total topics across all courses
+    let totalTopics = 0;
+    let completedTopics = 0;
+
+    [...roadmapNodes, ...parallelNodes].forEach(node => {
+        const nodeTopics = node.topics || [];
+        totalTopics += nodeTopics.length;
+
+        const userProgress = userData.progress[node.id] || [];
+        completedTopics += userProgress.length;
+    });
+
+    // Calculate percentage
+    const globalPercent = totalTopics === 0 ? 0 : Math.round((completedTopics / totalTopics) * 100);
+
+    // Update local data
+    userData.totalPercent = globalPercent;
+
+    // Update UI
+    const photo = userData.photoURL || currentUser.photoURL || '';
+    const imgHtml = photo ? `<img src="${photo}" style="width:24px; height:24px; border-radius:50%; vertical-align:middle; margin-right:5px; border:1px solid var(--primary);">` : '';
+    document.getElementById('user-name-display').innerHTML = `${imgHtml} ${userData.displayName} <span style="color:var(--gold); font-size:0.8rem; margin-left:5px;">(${globalPercent}%)</span>`;
+
+    // Update Firebase
+    await db.collection('users').doc(currentUser.uid).update({
+        totalPercent: globalPercent
+    });
+
+    return globalPercent;
 }
 
 async function handleLogin() {
@@ -440,33 +748,58 @@ function renderHeatmap() {
     if (!container) return;
     container.innerHTML = '';
 
-    // 1. Flatten all log dates
-    const allDates = [];
+    // 1. Collect ALL activity dates (logs, progress, resources)
+    const activityDates = {};
+
+    // A. Logs (Notes/Diary entries)
     Object.values(userData.logs || {}).forEach(nodeLogs => {
         nodeLogs.forEach(log => {
             if (log.date) {
-                allDates.push(log.date.split('T')[0]); // YYYY-MM-DD
+                const dateStr = log.date.split('T')[0]; // YYYY-MM-DD
+                activityDates[dateStr] = (activityDates[dateStr] || 0) + 1;
             }
         });
     });
 
-    // 2. Generate last 60 days
-    const now = new Date();
-    for (let i = 59; i >= 0; i--) {
-        const d = new Date();
-        d.setDate(now.getDate() - i);
-        const dateStr = d.toISOString().split('T')[0];
+    // B. Progress (Topic completions) - check actual completion dates from logs
+    // Since we don't have explicit completion timestamps, we'll use logs as proxy
+    // This is already covered by logs above
+
+    // C. Resources (if you want to track resource additions in the future)
+    // You can add this later if needed
+
+    // 2. Generate dates from Feb 1, 2026 to May 31, 2026
+    const startDate = new Date('2026-02-01');
+    const endDate = new Date('2026-05-31');
+
+    const currentDate = new Date(startDate);
+
+    while (currentDate <= endDate) {
+        const dateStr = currentDate.toISOString().split('T')[0];
 
         const sq = document.createElement('div');
         sq.className = 'heatmap-sq';
-        if (allDates.includes(dateStr)) {
+
+        const activityCount = activityDates[dateStr] || 0;
+
+        if (activityCount > 0) {
             sq.classList.add('active');
+            // Optional: Add intensity levels based on activity count
+            if (activityCount >= 5) {
+                sq.style.background = 'var(--primary)'; // High activity
+                sq.style.boxShadow = '0 0 8px var(--primary)';
+            } else if (activityCount >= 3) {
+                sq.style.background = 'rgba(0, 242, 255, 0.7)'; // Medium
+            }
         }
 
-        // Add native tooltip
-        sq.title = dateStr + (allDates.includes(dateStr) ? ' (Activity Found)' : ' (No activity)');
+        // Add tooltip with date and activity count
+        sq.title = `${dateStr}${activityCount > 0 ? ` (${activityCount} activities)` : ' (No activity)'}`;
 
         container.appendChild(sq);
+
+        // Move to next day
+        currentDate.setDate(currentDate.getDate() + 1);
     }
 }
 
@@ -554,53 +887,40 @@ function toggleSidePanel() {
     document.body.classList.toggle('panel-open', !isCollapsed);
 }
 
-// --- ONE-TIME MIGRATION: Update Observability with Modules ---
-// Run this once in console: migrateObservabilityCourse()
-async function migrateObservabilityCourse() {
-    const newTopics = [
-        // Prometheus Module
-        { id: "t8-p1", title: "Installation & Setup", module: "prometheus", videoUrl: "", notes: "" },
-        { id: "t8-p2", title: "PromQL Basics", module: "prometheus", videoUrl: "", notes: "" },
-        { id: "t8-p3", title: "Exporters", module: "prometheus", videoUrl: "", notes: "" },
-        { id: "t8-p4", title: "Service Discovery", module: "prometheus", videoUrl: "", notes: "" },
-        { id: "t8-p5", title: "AlertManager", module: "prometheus", videoUrl: "", notes: "" },
-        // Grafana Module
-        { id: "t8-g1", title: "Dashboard Basics", module: "grafana", videoUrl: "", notes: "" },
-        { id: "t8-g2", title: "Data Sources", module: "grafana", videoUrl: "", notes: "" },
-        { id: "t8-g3", title: "Panels & Variables", module: "grafana", videoUrl: "", notes: "" },
-        { id: "t8-g4", title: "Alerting in Grafana", module: "grafana", videoUrl: "", notes: "" },
-        // ELK Module
-        { id: "t8-e1", title: "Elasticsearch Setup", module: "elk", videoUrl: "", notes: "" },
-        { id: "t8-e2", title: "Logstash Pipelines", module: "elk", videoUrl: "", notes: "" },
-        { id: "t8-e3", title: "Kibana Dashboards", module: "elk", videoUrl: "", notes: "" }
-    ];
+// --- AUTO PROGRESS RECALCULATION (Silent) ---
+// Runs automatically without confirmation or reload
+async function recalculateAllUsersProgressSilent() {
+    if (!isAdmin) return;
 
-    await db.collection('global_roadmap').doc('8').update({ topics: newTopics });
-    showToast("✅ Observability course migrated!");
-    location.reload();
-}
+    try {
+        const usersSnap = await db.collection('users').get();
 
-// --- ONE-TIME MIGRATION: Update Linux with Modules ---
-// Run this once in console: migrateLinuxCourse()
-async function migrateLinuxCourse() {
-    const newTopics = [
-        // Linux Admin 1 Module
-        { id: "t1-a1", title: "Permissions & Users", module: "admin-1", videoUrl: "", notes: "" },
-        { id: "t1-a2", title: "Package Management", module: "admin-1", videoUrl: "", notes: "" },
-        { id: "t1-a3", title: "Process Management", module: "admin-1", videoUrl: "", notes: "" },
-        { id: "t1-a4", title: "File System Basics", module: "admin-1", videoUrl: "", notes: "" },
-        { id: "t1-a5", title: "Shell & Environment", module: "admin-1", videoUrl: "", notes: "" },
-        // Linux Admin 2 Module
-        { id: "t1-b1", title: "SSH Security", module: "admin-2", videoUrl: "", notes: "" },
-        { id: "t1-b2", title: "IP/DNS/Ports", module: "admin-2", videoUrl: "", notes: "" },
-        { id: "t1-b3", title: "Firewalls (iptables/ufw)", module: "admin-2", videoUrl: "", notes: "" },
-        { id: "t1-b4", title: "Service Management", module: "admin-2", videoUrl: "", notes: "" },
-        { id: "t1-b5", title: "Disk & Storage", module: "admin-2", videoUrl: "", notes: "" }
-    ];
+        for (const userDoc of usersSnap.docs) {
+            const userProgress = userDoc.data().progress || {};
 
-    await db.collection('global_roadmap').doc('1').update({ topics: newTopics });
-    showToast("✅ Linux course migrated!");
-    location.reload();
+            let totalTopics = 0;
+            let completedTopics = 0;
+
+            [...roadmapNodes, ...parallelNodes].forEach(node => {
+                const nodeTopics = node.topics || [];
+                totalTopics += nodeTopics.length;
+
+                const progress = userProgress[node.id] || [];
+                completedTopics += progress.length;
+            });
+
+            const globalPercent = totalTopics === 0 ? 0 : Math.round((completedTopics / totalTopics) * 100);
+
+            await db.collection('users').doc(userDoc.id).update({
+                totalPercent: globalPercent
+            });
+        }
+
+        console.log('✅ All users progress recalculated silently');
+    } catch (error) {
+        console.error('⚠️ Silent recalculation failed:', error);
+        // Don't block main operation
+    }
 }
 
 // --- TOAST NOTIFICATION ---
@@ -661,14 +981,12 @@ function renderGalaxy() {
             ? `<img src="${node.slug}" />`
             : `<img src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/png/${node.slug}.png" onerror="this.onerror=null;this.src='https://cdn.simpleicons.org/${node.slug}/white';">`;
 
-        // Percentage Badge logic
+        // Percentage Badge logic - Always show badge
         const totalTopics = (node.topics || []).length;
         const percent = totalTopics > 0 ? Math.round((done / totalTopics) * 100) : 0;
 
-        let badgeHtml = '';
-        if (totalTopics > 0) {
-            badgeHtml = `<div class="percentage-badge">${percent}%</div>`;
-        }
+        // Always show badge (even for new courses with 0 topics)
+        const badgeHtml = `<div class="percentage-badge">${percent}%</div>`;
 
         div.innerHTML = `${dragHandle}<div class="planet">${imgTag}</div>${badgeHtml}<div class="node-label">${index + 1}. ${node.title}</div>`;
         div.onclick = () => openModal(node);
@@ -1052,6 +1370,9 @@ function editNode(node) {
     updateIconPreview(node.slug);
 
     document.getElementById('course-edit-modal').classList.add('visible');
+
+    // Setup listeners for icon autocomplete
+    setupIconListeners();
 }
 
 function addNewNode() {
@@ -1067,6 +1388,9 @@ function addNewNode() {
     updateIconPreview('linux');
 
     document.getElementById('course-edit-modal').classList.add('visible');
+
+    // Setup listeners for icon autocomplete
+    setupIconListeners();
 }
 
 async function saveCourseNode() {
@@ -1078,23 +1402,17 @@ async function saveCourseNode() {
     if (!title) return alert("Title required");
 
     if (id) {
-        // EDIT
+        // EDIT - Find the node first
         const node = roadmapNodes.find(n => n.id.toString() === id.toString());
         if (node) {
-            // Update ONLY provided fields atomically
-            const updateData = { title: title };
+            // Update local data
             node.title = title;
+            if (slug) node.slug = slug;
+            if (duration) node.duration = duration;
 
-            if (slug) {
-                updateData.slug = slug;
-                node.slug = slug;
-            }
-            if (duration) {
-                updateData.duration = duration;
-                node.duration = duration;
-            }
-
-            await db.collection('global_roadmap').doc(id.toString()).update(updateData);
+            // 🔥 CRITICAL FIX: Save ALL node data, not just updated fields
+            // This preserves topics, order, and other fields
+            await saveNodeUpdate(node);
             showToast("✅ Course Updated");
         }
     } else {
@@ -1114,6 +1432,9 @@ async function saveCourseNode() {
     }
     closeCourseEditModal();
     renderGalaxy();
+
+    // Auto-recalculate ALL users' progress when course structure changes
+    await recalculateAllUsersProgressSilent();
 }
 
 function closeCourseEditModal() {
@@ -1127,9 +1448,18 @@ async function deleteNode(id) {
     renderGalaxy();
 
     await db.collection('global_roadmap').doc(id.toString()).delete();
+
+    // Auto-recalculate ALL users' progress when course is removed
+    await recalculateAllUsersProgressSilent();
 }
 
 async function saveRoadmapOrder(isAutoSave = false) {
+    // 🔒 ADMIN CHECK: Only admins can reorder courses
+    if (!isAdmin) {
+        console.warn('⚠️ Non-admin user attempted to save roadmap order');
+        return;
+    }
+
     // 1. Read DOM Order from Flex Layout
     const container = document.getElementById('solar-systems');
     const children = Array.from(container.children).filter(c => c.classList.contains('system-node'));
@@ -1148,10 +1478,11 @@ async function saveRoadmapOrder(isAutoSave = false) {
     });
     roadmapNodes = newRoadmapNodes;
 
-    // 3. Save to Firestore - UPDATE ONLY 'order' FIELD
+    // 3. Save to Firestore - UPDATE ONLY 'order' FIELD (preserves all other data)
     const batch = db.batch();
     roadmapNodes.forEach((n, idx) => {
         const ref = db.collection('global_roadmap').doc(n.id.toString());
+        // Using update() with only 'order' field preserves topics, duration, etc.
         batch.update(ref, {
             order: idx
         });
@@ -1160,6 +1491,11 @@ async function saveRoadmapOrder(isAutoSave = false) {
 
     try {
         await batch.commit();
+        console.log('✅ Roadmap order saved successfully');
+
+        // Auto-recalculate ALL users' progress when course structure changes
+        await recalculateAllUsersProgressSilent();
+
         if (isAutoSave) {
             showToast("✅ Layout Saved");
         } else {
@@ -1169,7 +1505,7 @@ async function saveRoadmapOrder(isAutoSave = false) {
             toggleEditMode(false);
         }
     } catch (error) {
-        console.error("Error saving roadmap order:", error);
+        console.error("❌ Error saving roadmap order:", error);
         showToast("❌ Save Failed");
     }
 }
@@ -1812,27 +2148,13 @@ async function toggleTopicDone(tid) {
     renderParallel();
     renderGalaxy();
 
-    // Calculate Total Progress logic
-    let totalT = 0, totalD = 0;
-    [...roadmapNodes, ...parallelNodes].forEach(n => {
-        const nTopics = n.topics || [];
-        totalT += nTopics.length;
-        totalD += (userData.progress[n.id] || []).length;
-    });
+    // Recalculate global progress based on current roadmap
+    await recalculateGlobalProgress();
 
-    const globalP = totalT === 0 ? 0 : Math.round((totalD / totalT) * 100);
-
-    // Update Header Display Immediately
-    userData.totalPercent = globalP;
-    const photo = userData.photoURL || (currentUser ? currentUser.photoURL : '');
-    const imgHtml = photo ? `<img src="${photo}" style="width:24px; height:24px; border-radius:50%; vertical-align:middle; margin-right:5px; border:1px solid var(--primary);">` : '';
-    document.getElementById('user-name-display').innerHTML = `${imgHtml} ${userData.displayName} <span style="color:var(--gold); font-size:0.8rem; margin-left:5px;">(${globalP}%)</span>`;
-
+    // Update user progress in Firebase
     if (currentUser) {
-        // SELECTIVE UPDATE: Only update the changed progress key and total percentage
         await db.collection('users').doc(currentUser.uid).update({
             [`progress.${currentModalNode.id}`]: list,
-            totalPercent: globalP,
             lastActive: new Date().toISOString()
         });
     }
@@ -1892,6 +2214,7 @@ async function addUserLink(topicIndex) {
     });
 
     renderChecklist();
+    calculateTotalLogs();
 }
 
 async function deleteUserLink(topicIndex, linkIndex) {
@@ -1905,9 +2228,23 @@ async function deleteUserLink(topicIndex, linkIndex) {
     });
 
     renderChecklist();
+    calculateTotalLogs();
 }
 
-function renderChecklist() {
+function renderChecklist(filterModule = null) {
+    // State Persistence: Capture current state before wiping DOM
+    const checklistContainerMock = document.getElementById('checklist-items-list');
+    const expandedChapters = new Set();
+    let domActiveModule = undefined;
+
+    if (checklistContainerMock) {
+        checklistContainerMock.querySelectorAll('.chapter-accordion.expanded').forEach(acc => {
+            expandedChapters.add(acc.getAttribute('data-chapter'));
+        });
+    }
+    const activeBtn = document.querySelector('.module-filter-btn.active');
+    if (activeBtn) domActiveModule = activeBtn.dataset.module;
+
     const c = document.getElementById('checklist-container');
     c.innerHTML = '';
 
@@ -1918,9 +2255,25 @@ function renderChecklist() {
     document.getElementById('modal-progress-text').innerText = Math.round((done.length / Math.max(currentModalNode.topics.length, 1)) * 100) + "%";
 
     // --- MODULE FILTER BAR ---
+    // Define fixed modules for Linux course (always show these 3 tabs in order)
+    const isLinuxCourse = currentModalNode.slug === 'linux' || currentModalNode.title?.toLowerCase().includes('linux');
+    const fixedModules = isLinuxCourse ? ['admin-1', 'admin-2', '__general__'] : [];
+
     // Detect unique modules in topics
-    const modules = [...new Set(currentModalNode.topics.map(t => t.module).filter(Boolean))];
-    let activeModule = modules.length > 0 ? modules[0] : null; // Default to first module
+    const detectedModules = [...new Set(currentModalNode.topics.map(t => t.module).filter(Boolean))];
+
+    // For Linux course, use fixed order. For others, use detected modules.
+    const modules = isLinuxCourse ? fixedModules : detectedModules;
+
+    // Determine active module: Priority: Argument > DOM State > Default
+    let resolvedModule = filterModule;
+    // Treat null (default param) same as undefined for persistence logic
+    if ((resolvedModule === undefined || resolvedModule === null) && domActiveModule !== undefined) {
+        resolvedModule = domActiveModule;
+    }
+
+    // Default to 'admin-1' for Linux course, first module for others
+    let activeModule = resolvedModule !== undefined ? resolvedModule : (isLinuxCourse ? 'admin-1' : (detectedModules.length > 0 ? detectedModules[0] : null));
 
     // -- Populate Consolidated Category Dropdown for Add Topic --
     const moduleSelectContainer = document.getElementById('module-select-container');
@@ -1933,12 +2286,26 @@ function renderChecklist() {
         'grafana': 'Grafana',
         'elk': 'ELK Stack',
         'admin-1': 'Linux Admin 1',
-        'admin-2': 'Linux Admin 2'
+        'admin-2': 'Linux Admin 2',
+        '__general__': 'General Topics',
+        'docker-core': 'Docker Core',
+        'docker-compose': 'Docker Compose',
+        'ecr': 'Amazon ECR',
+        'nexus': 'Nexus Repository'
     };
 
-    if (modules.length > 0) {
+    // For Linux course, always show 3 options: Admin 1, Admin 2, General Topics
+    if (isLinuxCourse) {
+        let options = `
+            <option value="admin-1">Linux Admin 1</option>
+            <option value="admin-2">Linux Admin 2</option>
+            <option value="">General Topics</option>
+        `;
+        moduleSelectContainer.innerHTML = `<select id="new-topic-module" class="dark-input" style="min-width:160px; border-color:var(--primary);">${options}</select>`;
+        moduleSelectContainer.style.display = 'flex';
+    } else if (detectedModules.length > 0) {
         let options = `<option value="">(No Module / General Topics)</option>`;
-        options += modules.map(mod => `<option value="${mod}">${moduleLabels[mod] || mod}</option>`).join('');
+        options += detectedModules.map(mod => `<option value="${mod}">${moduleLabels[mod] || mod}</option>`).join('');
         moduleSelectContainer.innerHTML = `<select id="new-topic-module" class="dark-input" style="min-width:160px; border-color:var(--primary);">${options}</select>`;
         moduleSelectContainer.style.display = 'flex';
     } else {
@@ -1947,7 +2314,9 @@ function renderChecklist() {
         moduleSelectContainer.style.display = 'flex';
     }
 
-    if (modules.length > 1) {
+    // Show filter bar for Linux course or if there are modules
+    const hasGeneralTopics = currentModalNode.topics.some(t => !t.module);
+    if (isLinuxCourse || modules.length >= 1 || hasGeneralTopics) {
         const filterBar = document.createElement('div');
         filterBar.id = 'module-filter-bar';
         filterBar.style.cssText = 'display:flex; flex-wrap:wrap; gap:8px; margin-bottom:15px; padding-bottom:15px; border-bottom:1px solid var(--border);';
@@ -1963,14 +2332,21 @@ function renderChecklist() {
             'elk': { slug: 'elastic', label: 'ELK Stack' },
             'alerting': { slug: null, label: '🔔 Alerting' },
             'admin-1': { slug: 'linux', label: ' Admin 1' },
-            'admin-2': { slug: 'linux', label: ' Admin 2' }
+            'admin-2': { slug: 'linux', label: ' Admin 2' },
+            '__general__': { slug: null, label: '📚 General Topics' },
+            'docker-core': { slug: 'docker', label: 'Docker Core' },
+            'docker-compose': { slug: 'docker', label: 'Docker Compose' },
+            'ecr': { slug: 'amazonaws', label: 'Amazon ECR' },
+            'nexus': { slug: 'sonatype', label: 'Nexus' }
         };
 
+        // Render tabs in correct order
         modules.forEach((mod, idx) => {
             const btn = document.createElement('button');
-            btn.className = 'module-filter-btn' + (idx === 0 ? ' active' : '');
+            const isActive = (mod === activeModule);
+            btn.className = 'module-filter-btn' + (isActive ? ' active' : '');
             btn.dataset.module = mod;
-            btn.onclick = () => filterTopics(mod);
+            btn.onclick = () => renderChecklist(mod); // Re-render with new filter
 
             const config = moduleIcons[mod] || { slug: null, label: mod };
             if (config.slug) {
@@ -2014,252 +2390,376 @@ function renderChecklist() {
         }
     }
 
-    // Filter function (closure for active module state)
-    window.filterTopics = function (module) {
-        activeModule = module;
+    // Define helper globally for persistence across renders
+    window.filterTopics = function (mod) { renderChecklist(mod); };
 
-        // Update button states
-        document.querySelectorAll('.module-filter-btn').forEach(btn => {
-            btn.classList.remove('active');
-            if (btn.dataset.module === module) {
-                btn.classList.add('active');
-            }
-        });
 
-        // Show/hide topic items
-        document.querySelectorAll('#checklist-items-list .checklist-item').forEach(item => {
-            const topicModule = item.dataset.module;
-            if (topicModule === module) {
-                item.style.display = 'flex';
-            } else {
-                item.style.display = 'none';
-            }
-        });
-
-        // Also hide/show section headers based on visible topics
-        document.querySelectorAll('#checklist-items-list .section-header').forEach(header => {
-            const section = header.dataset.section;
-            const visibleTopics = document.querySelectorAll(`#checklist-items-list .checklist-item[data-section="${section}"]:not([style*="display: none"])`);
-            header.style.display = visibleTopics.length > 0 ? 'block' : 'none';
-        });
-    };
-
-    // 1. Create Sortable Container for Topics
+    // 1. Create Container for Accordions
     const listDiv = document.createElement('div');
     listDiv.id = 'checklist-items-list';
     c.appendChild(listDiv);
 
-    // Accordion Style for Topics
-    let currentSection = null;
-    currentModalNode.topics.forEach((t, index) => {
-        // Insert Section Header if it changes (Skip if we have modules enabled as they serve as categories)
-        if (t.section && t.section !== currentSection && modules.length <= 1) {
-            currentSection = t.section;
-            const headerDiv = document.createElement('div');
-            headerDiv.className = 'section-header';
-            headerDiv.dataset.section = t.section;
-            headerDiv.style.cssText = 'color:var(--primary); font-size:0.85rem; font-weight:bold; letter-spacing:1px; margin: 20px 0 10px 0; border-bottom:1px solid rgba(0, 242, 255, 0.2); padding-bottom:5px; text-transform:uppercase;';
-            headerDiv.innerText = t.section;
-            listDiv.appendChild(headerDiv);
-        }
+    // Filter Logic
+    let visibleTopics = currentModalNode.topics;
+    let isGeneralTopicsView = false;
 
-        const isChecked = done.includes(t.id);
+    if (activeModule === '__general__') {
+        // Show only topics without a module
+        visibleTopics = currentModalNode.topics.filter(t => !t.module);
+        isGeneralTopicsView = true;
+    } else if (activeModule) {
+        visibleTopics = currentModalNode.topics.filter(t => t.module === activeModule);
+    }
 
-        const div = document.createElement('div');
-        div.className = `checklist-item`;
-        div.setAttribute('data-id', t.id); // For sorting
-        if (t.module) div.dataset.module = t.module; // For filtering
-        if (t.section) div.dataset.section = t.section; // For section visibility
-        div.style.flexDirection = 'column';
-        div.style.alignItems = 'flex-start';
-        div.style.cursor = 'default';
+    // Group by Chapter (Accordion Logic) - Skip for General Topics view
+    const chapterMap = new Map();
+    if (isGeneralTopicsView) {
+        // For General Topics, put all in one flat group
+        chapterMap.set('General Topics in Linux', visibleTopics);
+    } else {
+        visibleTopics.forEach(t => {
+            const chapter = t.chapter || t.section || 'General Topics';
+            if (!chapterMap.has(chapter)) {
+                chapterMap.set(chapter, []);
+            }
+            chapterMap.get(chapter).push(t);
+        });
+    }
 
-        // Header row
-        const header = document.createElement('div');
-        header.style.display = 'flex';
-        header.style.alignItems = 'center';
-        header.style.gap = '10px';
-        header.style.width = '100%';
+    // Render Accordions (or flat list for General Topics)
+    chapterMap.forEach((chapterTopics, chapterName) => {
+        // Calculate Chapter Progress
+        const chapterDoneCount = chapterTopics.filter(t => done.includes(t.id)).length;
+        const chapterTotal = chapterTopics.length;
 
-        let adminControls = '';
-        let dragHandle = '';
-        if (isEditMode) {
-            // Drag Handle
-            dragHandle = `<span class="topic-drag-handle" style="cursor:grab; font-size:1.2rem; color:var(--text-muted); margin-right:5px;">⣿</span>`;
+        // For General Topics, skip the accordion wrapper and render topics directly
+        if (isGeneralTopicsView) {
+            // Flat list container (no accordion)
+            const flatListContainer = document.createElement('div');
+            flatListContainer.className = 'general-topics-list';
+            flatListContainer.style.cssText = 'display:flex; flex-direction:column; width:100%;';
 
-            // Edit & Delete
-            adminControls = `
-                        <div style="margin-left:auto; display:flex; gap:10px;">
-                            <span style="cursor:pointer;" title="Edit Title" onclick="enableInlineEdit(${index})">✏️</span>
-                            <span style="color:red; cursor:pointer; font-weight:bold;" title="Delete Topic" onclick="deleteTopic(${index})">✕</span>
-                        </div>
-                    `;
-        }
-
-        // Using SVG Arrow for accordion
-        const arrow = `<span id="arrow-${t.id}" style="font-size:0.8rem; transition:0.3s; cursor:pointer;" onclick="toggleAccordion('${t.id}')">▶</span>`;
-
-        header.innerHTML = `
-                    ${dragHandle}
-                    ${arrow}
-                    <span id="topic-title-${index}" onclick="toggleAccordion('${t.id}')" style="flex:1; cursor:pointer; font-weight:600; display:flex; align-items:center;">
-                        ${t.title}
-                    </span>
-                    ${adminControls}
-                `;
-
-        // Expanded Content
-        const body = document.createElement('div');
-        body.id = `accordion-${t.id}`;
-        body.style.display = 'none'; // Hidden by default
-        body.style.width = '100%';
-        body.style.marginTop = '10px';
-        body.style.paddingLeft = '20px';
-        body.style.borderLeft = '2px solid var(--border)';
-        body.style.marginLeft = '5px';
-
-        // 1. DONE Checkbox + Proof of Work
-        const proofKey = currentModalNode.id + '_' + t.id;
-        const proofUrl = (userData.proofs && userData.proofs[proofKey]) || "";
-        const proofIconClass = proofUrl ? 'has-proof' : '';
-        const proofTooltip = proofUrl ? 'Edit Proof' : 'Add Proof of Work (GitHub/URL)';
-
-        // Direct external link icon if proof exists
-        const externalLinkIcon = proofUrl
-            ? `<a href="${ensureAbsoluteUrl(proofUrl)}" target="_blank" class="external-proof-link" title="Open Link: ${proofUrl}"><i class="fas fa-external-link-alt"></i></a>`
-            : '';
-
-        const checkDiv = document.createElement('div');
-        checkDiv.style.marginBottom = '10px';
-        checkDiv.innerHTML = `
-                    <div style="display:flex; align-items:center; width:100%;">
-                        <label style="display:flex; align-items:center; gap:10px; cursor:pointer; color: ${isChecked ? 'var(--success)' : 'var(--text-main)'}; flex:1;">
-                            <input type="checkbox" ${isChecked ? 'checked' : ''} onchange="toggleTopicDone('${t.id}')" style="transform:scale(1.2);">
-                            ${isChecked ? 'Completed' : 'Mark as Done'}
-                        </label>
-                        <div style="display:flex; align-items:center;">
-                            <span class="proof-link-btn ${proofIconClass}" onclick="openProofModal('${t.id}', '${proofUrl}')" title="${proofTooltip}">
-                                add your work here 🔗
-                            </span>
-                            ${externalLinkIcon}
-                        </div>
+            // Show empty state if no topics
+            if (chapterTopics.length === 0) {
+                flatListContainer.innerHTML = `
+                    <div style="text-align:center; padding:30px; color:var(--text-muted); opacity:0.7;">
+                        <i class="fas fa-inbox" style="font-size:2rem; margin-bottom:10px; display:block;"></i>
+                        No general topics yet. Add one using the form above!
                     </div>
                 `;
+                listDiv.appendChild(flatListContainer);
+                return;
+            }
 
-        // 2. Resources List (Visible to ALL, controls for ADMIN)
-        const resDiv = document.createElement('div');
-        resDiv.style.marginBottom = '10px';
+            listDiv.appendChild(flatListContainer);
 
-        // Header with optional Add button (admin only)
-        const addResBtn = isEditMode
-            ? `<span onclick="addTopicResource(${index})" style="cursor:pointer; font-size:0.8rem; color:var(--success); margin-left:10px;">(+) Add</span>`
-            : '';
+            // Render topics directly as flat list
+            chapterTopics.forEach(t => {
+                const index = currentModalNode.topics.indexOf(t);
+                const isChecked = done.includes(t.id);
 
-        resDiv.innerHTML = `<div style="font-size:0.8rem; color:var(--text-muted); margin-bottom:5px;">Resources:${addResBtn}</div>`;
+                const div = document.createElement('div');
+                div.className = 'checklist-item roadmap-item';
+                div.setAttribute('data-id', t.id);
+                div.setAttribute('data-index', index);
+                div.style.cssText = 'display:flex; flex-direction:column; width:100%; border-bottom:1px solid rgba(255,255,255,0.05);';
 
-        if (t.resources && t.resources.length > 0) {
-            t.resources.forEach((r, resIdx) => {
-                const safeUrl = ensureAbsoluteUrl(r.url);
-                const iconHtml = getIconForUrl(r.url, r.type);
-                const deleteBtn = isEditMode
-                    ? `<span onclick="deleteTopicResource(${index}, ${resIdx})" style="color:red; cursor:pointer; font-size:0.75rem; margin-left:8px;" title="Delete Resource">✕</span>`
-                    : '';
-                resDiv.innerHTML += `
-                            <div style="display:flex; align-items:center;">
-                                <a href="${safeUrl}" target="_blank" class="resource-link" style="font-size:0.85rem; padding:5px;">${iconHtml} ${r.title}</a>
-                                ${deleteBtn}
-                            </div>`;
+                const headerRow = document.createElement('div');
+                headerRow.className = 'topic-item';
+
+                let adminControls = '';
+                let dragHandle = '';
+                if (isEditMode) {
+                    dragHandle = `<span class="topic-drag-handle" style="cursor:grab; font-size:1.2rem; color:var(--text-muted); margin-right:5px;">⣿</span>`;
+                    adminControls = `<div style="margin-left:auto; display:flex; gap:10px;"><span style="cursor:pointer;" title="Edit Title" onclick="enableInlineEdit(${index})">✏️</span><span style="color:red; cursor:pointer; font-weight:bold;" title="Delete Topic" onclick="deleteTopic(${index})">✕</span></div>`;
+                }
+
+                const arrow = `<i id="arrow-${t.id}" class="fas fa-chevron-right topic-chevron" style="font-size:0.75rem; color:var(--primary); transition:transform 0.3s ease; cursor:pointer;" onclick="toggleAccordion('${t.id}')"></i>`;
+
+                headerRow.innerHTML = `${dragHandle}${arrow}<div class="topic-checkbox"><input type="checkbox" ${isChecked ? 'checked' : ''} onchange="toggleTopicDone('${t.id}')" style="transform:scale(1.2); cursor:pointer;"></div><span id="topic-title-${index}" onclick="toggleAccordion('${t.id}')" style="flex:1; cursor:pointer; font-weight:600; display:flex; align-items:center; margin-left:10px; ${isChecked ? 'text-decoration:line-through; opacity:0.7;' : ''}">${t.title}</span>${adminControls}`;
+
+                // Details Body
+                const detailsBody = document.createElement('div');
+                detailsBody.id = `accordion-${t.id}`;
+                detailsBody.style.cssText = 'display:none; padding:12px 16px; border-left:3px solid var(--primary); margin-left:0; width:100%; background:rgba(0, 242, 255, 0.02);';
+
+                // Proof, Resources, Links, Notes (same as normal topics)
+                const proofKey = currentModalNode.id + '_' + t.id;
+                const proofUrl = (userData.proofs && userData.proofs[proofKey]) || "";
+                const externalLinkIcon = proofUrl ? `<a href="${ensureAbsoluteUrl(proofUrl)}" target="_blank" class="external-proof-link"><i class="fas fa-external-link-alt"></i></a>` : '';
+                detailsBody.innerHTML = `<div style="font-size:0.8rem; color:var(--text-muted); margin-bottom:5px;"><span class="proof-link-btn ${proofUrl ? 'has-proof' : ''}" onclick="openProofModal('${t.id}', '${proofUrl}')" style="font-size:0.8rem;">${proofUrl ? 'Edit Proof 🔗' : 'Add Proof of Work (GitHub/URL) <i class="fab fa-github"></i>'}</span>${externalLinkIcon}</div>`;
+
+                // Resources
+                let resHtml = `<div style="font-size:0.8rem; color:var(--text-muted); margin-bottom:5px;">Recommended Resources:${isEditMode ? `<span onclick="addTopicResource(${index})" style="cursor:pointer; font-size:0.8rem; color:var(--success); margin-left:10px;">(+) Add</span>` : ''}</div>`;
+                if (t.resources && t.resources.length > 0) {
+                    t.resources.forEach((r, resIdx) => {
+                        const iconHtml = getIconForUrl(r.url, r.type);
+                        const deleteBtn = isEditMode ? `<span onclick="deleteTopicResource(${index}, ${resIdx})" style="color:red; cursor:pointer; font-size:0.75rem; margin-left:8px;">✕</span>` : '';
+                        resHtml += `<div style="display:flex; align-items:center;"><a href="${ensureAbsoluteUrl(r.url)}" target="_blank" class="resource-link" style="font-size:0.85rem; padding:5px;">${iconHtml} ${r.title}</a>${deleteBtn}</div>`;
+                    });
+                } else {
+                    resHtml += `<div style="font-size:0.8rem; font-style:italic; opacity:0.5;">No resources yet.</div>`;
+                }
+                detailsBody.innerHTML += resHtml;
+
+                // Notes
+                const topicNotesKey = currentModalNode.id + '_' + t.id + '_notes';
+                const topicNotes = userData.progress[topicNotesKey] || "";
+                detailsBody.innerHTML += `<div style="margin-top:10px;"><div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;"><div style="font-size:0.75rem; color:var(--text-muted); font-weight:600;"><i class="fa-regular fa-file-lines" style="margin-right:5px;"></i> My Notes</div><span onclick="toggleNoteEdit('${topicNotesKey}')" style="cursor:pointer; font-size:0.8rem; opacity:0.5;">✏️ Edit</span></div><div id="note-view-${topicNotesKey}" class="md-content" style="background:rgba(0,0,0,0.15); padding:12px; border-radius:8px; border:1px solid rgba(255,255,255,0.05); min-height:40px; cursor:pointer; font-size:0.9rem;" onclick="toggleNoteEdit('${topicNotesKey}')">${topicNotes ? marked.parse(topicNotes) : '<span style="font-style:italic; opacity:0.4;">Click to add notes...</span>'}</div><textarea id="note-edit-${topicNotesKey}" class="dark-input md-edit-box" dir="auto" style="display:none; width:100%; min-height:120px; font-size:0.9rem; margin-top:0;" onblur="saveNoteAndRender('${topicNotesKey}')">${topicNotes}</textarea></div>`;
+
+                div.appendChild(headerRow);
+                div.appendChild(detailsBody);
+                flatListContainer.appendChild(div);
             });
-        } else {
-            resDiv.innerHTML += `<div style="font-size:0.8rem; font-style:italic; opacity:0.5;">No resources yet.</div>`;
+
+            return; // Skip rest of accordion logic for General Topics
         }
 
-        // 3. MY LINKS (User Personal Links)
-        const userLinksDiv = document.createElement('div');
-        userLinksDiv.className = 'user-links-section';
-        userLinksDiv.style.marginBottom = '10px';
+        // Accordion Container (for non-General Topics)
+        const accordion = document.createElement('div');
+        accordion.className = 'chapter-accordion'; // User CSS class
+        // Restore expanded state
+        if (expandedChapters.has(chapterName)) {
+            accordion.classList.add('expanded');
+        }
+        accordion.style.marginBottom = '10px';
 
-        const userLinksKey = `${currentModalNode.id}_${t.id}`;
-        const userLinks = (userData.userLinks && userData.userLinks[userLinksKey]) || [];
+        // Header
+        const header = document.createElement('div');
+        header.className = 'chapter-header'; // User CSS class
 
-        // Always show add button for all users (not just admins)
-        const addUserLinkBtn = `<span onclick="addUserLink(${index})" style="cursor:pointer; font-size:0.8rem; color:#8a2be2; margin-left:10px;">(+) Add Link</span>`;
+        let headerContent = `
+            <div style="display: flex; align-items: center; gap: 10px; flex: 1;">
+                ${isAdmin && isEditMode ? '<span class="chapter-drag-handle" style="cursor:grab; font-size:1rem; color:var(--text-muted); margin-right:5px;" title="Drag to reorder">⣿</span>' : ''}
+                <i class="fas fa-chevron-down chapter-chevron"></i>
+                <span class="chapter-title" id="chapter-title-${chapterName.replace(/\s+/g, '-')}" style="font-weight:bold;">${chapterName}</span>
+            </div>
+            <span style="font-size:0.8rem; opacity:0.7; margin-right: 10px;">${chapterDoneCount}/${chapterTotal} Done</span>
+        `;
 
-        userLinksDiv.innerHTML = `<div style="font-size:0.8rem; color:#8a2be2; margin-bottom:5px; font-weight:600;">🔗 My Links:${addUserLinkBtn}</div>`;
+        // Add Edit and Delete Buttons if Admin AND Edit Mode is active
+        if (isAdmin && isEditMode) {
+            const moduleSlug = chapterTopics.length > 0 && chapterTopics[0].module ? chapterTopics[0].module : '';
+            const escapedChapterName = chapterName.replace(/'/g, "\\'");
+            headerContent += `
+                <button class="edit-chapter-btn" style="margin-left: 5px; padding: 4px 10px; font-size: 0.75rem; background: rgba(0,242,255,0.1); border: 1px solid var(--primary); border-radius: 4px; color: var(--primary); cursor: pointer; display: flex; align-items: center; gap: 4px;" onclick="event.stopPropagation(); editChapterName('${escapedChapterName}', '${moduleSlug}')">
+                    <i class="fas fa-edit"></i> Edit
+                </button>
+                <button class="delete-chapter-btn" style="margin-left: 5px;" onclick="event.stopPropagation(); deleteChapter('${escapedChapterName}', '${moduleSlug}')">
+                    <i class="fas fa-trash"></i> Delete
+                </button>
+            `;
+        }
 
-        if (userLinks.length > 0) {
-            userLinks.forEach((link, linkIdx) => {
-                const safeUrl = ensureAbsoluteUrl(link.url);
-                const deleteBtn = `<span class="user-link-delete" onclick="deleteUserLink(${index}, ${linkIdx})" title="Delete">✕</span>`;
-                const iconHtml = getIconForUrl(link.url, null);
-                userLinksDiv.innerHTML += `
-                            <div class="user-link-item">
-                                <a href="${safeUrl}" target="_blank" class="resource-link" style="font-size:0.85rem; padding:5px; flex:1;">${iconHtml} ${link.title}</a>
-                                ${deleteBtn}
+        header.innerHTML = headerContent;
+
+        // Only set cursor:pointer - the actual click handler is defined later (around line 2423)
+        header.style.cursor = 'pointer';
+
+        // Body (Collapsible)
+        const body = document.createElement('div');
+        body.className = 'chapter-body';
+        // Initial state: collapsed. If activeModule changed, maybe auto-expand if only one chapter?
+        // User didn't ask for auto-expand. Default collapsed.
+
+        // Render Topics inside Body
+        chapterTopics.forEach(t => {
+            // Find Original Index for editing
+            const index = currentModalNode.topics.indexOf(t);
+            const isChecked = done.includes(t.id);
+
+            const div = document.createElement('div');
+            div.className = `checklist-item`; // Keep class for possible styling
+            div.className += ' roadmap-item'; // Add user requested class
+            div.setAttribute('data-id', t.id); // For sorting
+            div.setAttribute('data-index', index);
+            if (t.module) div.dataset.module = t.module;
+
+            // Item Styling
+            div.style.cssText = 'display:flex; flex-direction:column; width:100%; border-bottom:1px solid rgba(255,255,255,0.05);';
+
+            // --- Header Row ---
+            // --- Header Row ---
+            const headerRow = document.createElement('div');
+            // Use .topic-item for strictly left-aligned styling as requested
+            headerRow.className = 'topic-item';
+            // REMOVED inline styles (display:flex, etc) to let CSS .topic-item take full control
+            // Only keeping width:100% just in case, but CSS should handle padding/gap/alignment
+
+            let adminControls = '';
+            let dragHandle = '';
+            if (isEditMode) {
+                dragHandle = `<span class="topic-drag-handle" style="cursor:grab; font-size:1.2rem; color:var(--text-muted); margin-right:5px;">⣿</span>`;
+                adminControls = `
+                            <div style="margin-left:auto; display:flex; gap:10px;">
+                                <span style="cursor:pointer;" title="Edit Title" onclick="enableInlineEdit(${index})">✏️</span>
+                                <span style="color:red; cursor:pointer; font-weight:bold;" title="Delete Topic" onclick="deleteTopic(${index})">✕</span>
                             </div>
                         `;
-            });
-        } else {
-            userLinksDiv.innerHTML += `<div style="font-size:0.8rem; font-style:italic; opacity:0.5;">No personal links yet. Add your favorite tutorials!</div>`;
-        }
+            }
 
-        // 4. User Notes
-        const topicNotesKey = currentModalNode.id + '_' + t.id + '_notes';
-        const topicNotes = userData.progress[topicNotesKey] || "";
+            // Inner Accordion Arrow (for details)
+            const arrow = `<i id="arrow-${t.id}" class="fas fa-chevron-right topic-chevron" style="font-size:0.75rem; color:var(--primary); transition:transform 0.3s ease; cursor:pointer;" onclick="toggleAccordion('${t.id}')"></i>`;
 
-        const noteDiv = document.createElement('div');
-        noteDiv.className = 'topic-note-container';
-        noteDiv.innerHTML = `
-                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-                        <div style="font-size:0.75rem; color:var(--text-muted); font-weight:600; text-transform:uppercase; letter-spacing:0.5px;">
-                            <i class="fa-regular fa-file-lines" style="margin-right:5px;"></i> My Notes (Markdown Support)
+            headerRow.innerHTML = `
+                        ${dragHandle}
+                        ${arrow}
+                        <div class="topic-checkbox">
+                             <input type="checkbox" ${isChecked ? 'checked' : ''} onchange="toggleTopicDone('${t.id}')" style="transform:scale(1.2); cursor:pointer;">
                         </div>
-                        <span id="edit-icon-${topicNotesKey}" style="cursor:pointer; font-size:0.8rem; opacity:0.5; transition:0.2s;" 
-                              onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0.5"
-                              onclick="toggleNoteEdit('${topicNotesKey}')">✏️ Edit</span>
-                    </div>
-                    <div id="note-view-${topicNotesKey}" class="md-content" 
-                         style="background:rgba(0,0,0,0.15); padding:12px; border-radius:8px; border:1px solid rgba(255,255,255,0.05); min-height:40px; cursor:pointer; font-size:0.9rem;" 
-                         onclick="toggleNoteEdit('${topicNotesKey}')">
-                        ${topicNotes ? marked.parse(topicNotes) : '<span style="font-style:italic; opacity:0.4;">No notes yet. Click to add markdown thoughts...</span>'}
-                    </div>
-                    <textarea id="note-edit-${topicNotesKey}" class="dark-input md-edit-box" dir="auto" 
-                              placeholder="Type your notes here... (Use # for headers, **bold**, etc.)"
-                              style="display:none; width:100%; min-height:120px; font-size:0.9rem; margin-top:0;" 
-                              onblur="saveNoteAndRender('${topicNotesKey}')">${topicNotes}</textarea>
-                `;
+                        <span id="topic-title-${index}" onclick="toggleAccordion('${t.id}')" style="flex:1; cursor:pointer; font-weight:600; display:flex; align-items:center; margin-left:10px; ${isChecked ? 'text-decoration:line-through; opacity:0.7;' : ''}">
+                            ${t.title}
+                        </span>
+                        ${adminControls}
+                    `;
 
-        body.appendChild(checkDiv);
-        body.appendChild(resDiv); // Resources visible to all
-        body.appendChild(userLinksDiv);
-        body.appendChild(noteDiv);
+            // --- Details Body (Inner) ---
+            const detailsBody = document.createElement('div');
+            detailsBody.id = `accordion-${t.id}`;
+            detailsBody.style.display = 'none'; // Hidden by default
+            detailsBody.style.padding = '12px 16px';
+            detailsBody.style.borderLeft = '3px solid var(--primary)';
+            detailsBody.style.marginLeft = '0';
+            detailsBody.style.width = '100%';
+            detailsBody.style.background = 'rgba(0, 242, 255, 0.02)';
 
-        div.appendChild(header);
-        div.appendChild(body);
-        listDiv.appendChild(div);
+            // 1. Proof of Work
+            const proofKey = currentModalNode.id + '_' + t.id;
+            const proofUrl = (userData.proofs && userData.proofs[proofKey]) || "";
+            const proofIconClass = proofUrl ? 'has-proof' : '';
+            const proofTooltip = proofUrl ? 'Edit Proof' : 'Add Proof of Work (GitHub/URL)';
+            const externalLinkIcon = proofUrl
+                ? `<a href="${ensureAbsoluteUrl(proofUrl)}" target="_blank" class="external-proof-link" title="Open Link: ${proofUrl}"><i class="fas fa-external-link-alt"></i></a>`
+                : '';
 
-        // Apply syntax highlighting to the notes view
-        const view = document.getElementById(`note-view-${topicNotesKey}`);
-        applySyntaxHighlighting(view);
+            const checkDiv = document.createElement('div');
+            checkDiv.style.cssText = 'font-size:0.8rem; color:var(--text-muted); margin-bottom:8px;';
+            checkDiv.innerHTML = `<span class="proof-link-btn ${proofIconClass}" onclick="openProofModal('${t.id}', '${proofUrl}')" title="${proofTooltip}" style="font-size:0.8rem;">${proofUrl ? 'Edit Proof 🔗' : 'Add Proof of Work (GitHub/URL) <i class="fab fa-github"></i>'}</span>${externalLinkIcon}`;
+
+            // 2. Admin Links
+            const linksDiv = document.createElement('div');
+            linksDiv.style.cssText = 'display:flex; flex-wrap:wrap; gap:8px; margin-bottom:10px;';
+            if (t.links && Array.isArray(t.links)) {
+                t.links.forEach(link => {
+                    const isRec = link.adminRecommended;
+                    const btnStyle = isRec
+                        ? 'border:1px solid var(--gold); background:rgba(255, 215, 0, 0.1); color:var(--gold);'
+                        : 'border:1px solid var(--border); background:rgba(255,255,255,0.05); color:var(--text-muted);';
+                    const icon = isRec ? '⭐' : '🔗';
+                    linksDiv.innerHTML += `<a href="${ensureAbsoluteUrl(link.url)}" target="_blank" class="topic-link-btn" style="text-decoration:none; padding:5px 10px; border-radius:4px; font-size:0.75rem; display:flex; align-items:center; gap:5px; transition:all 0.2s; ${btnStyle}">${icon} ${link.title}</a>`;
+                });
+            }
+            // 3. Resources Section
+            const resDiv = document.createElement('div');
+            const addResBtn = isEditMode ? `<span onclick="addTopicResource(${index})" style="cursor:pointer; font-size:0.8rem; color:var(--success); margin-left:10px;">(+) Add</span>` : '';
+            resDiv.innerHTML = `<div style="font-size:0.8rem; color:var(--text-muted); margin-bottom:5px;">Recommended Resources:${addResBtn}</div>`;
+            if (t.resources && t.resources.length > 0) {
+                t.resources.forEach((r, resIdx) => {
+                    const safeUrl = ensureAbsoluteUrl(r.url);
+                    const iconHtml = getIconForUrl(r.url, r.type);
+                    const deleteBtn = isEditMode ? `<span onclick="deleteTopicResource(${index}, ${resIdx})" style="color:red; cursor:pointer; font-size:0.75rem; margin-left:8px;">✕</span>` : '';
+                    resDiv.innerHTML += `<div style="display:flex; align-items:center;"><a href="${safeUrl}" target="_blank" class="resource-link" style="font-size:0.85rem; padding:5px;">${iconHtml} ${r.title}</a>${deleteBtn}</div>`;
+                });
+            } else {
+                resDiv.innerHTML += `<div style="font-size:0.8rem; font-style:italic; opacity:0.5;">No resources yet.</div>`;
+            }
+
+            // 4. User Links
+            const userLinksDiv = document.createElement('div');
+            const userLinksKey = `${currentModalNode.id}_${t.id}`;
+            const userLinks = (userData.userLinks && userData.userLinks[userLinksKey]) || [];
+            const addUserLinkBtn = `<span onclick="addUserLink(${index})" style="cursor:pointer; font-size:0.8rem; color:#8a2be2; margin-left:10px;">(+) Add Link</span>`;
+            userLinksDiv.innerHTML = `<div style="font-size:0.8rem; color:#8a2be2; margin-bottom:5px; font-weight:600;">🔗 My Links:${addUserLinkBtn}</div>`;
+            if (userLinks.length > 0) {
+                userLinks.forEach((link, linkIdx) => {
+                    const safeUrl = ensureAbsoluteUrl(link.url);
+                    const deleteBtn = `<span class="user-link-delete" onclick="deleteUserLink(${index}, ${linkIdx})" title="Delete">✕</span>`;
+                    const iconHtml = getIconForUrl(link.url, null);
+                    userLinksDiv.innerHTML += `<div class="user-link-item"><a href="${safeUrl}" target="_blank" class="resource-link" style="font-size:0.85rem; padding:5px; flex:1;">${iconHtml} ${link.title}</a>${deleteBtn}</div>`;
+                });
+            } else {
+                userLinksDiv.innerHTML += `<div style="font-size:0.8rem; font-style:italic; opacity:0.5;">No personal links yet.</div>`;
+            }
+
+            // 5. Notes
+            const topicNotesKey = currentModalNode.id + '_' + t.id + '_notes';
+            const topicNotes = userData.progress[topicNotesKey] || "";
+            const noteDiv = document.createElement('div');
+            noteDiv.innerHTML = `
+             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                 <div style="font-size:0.75rem; color:var(--text-muted); font-weight:600; text-transform:uppercase; letter-spacing:0.5px;"><i class="fa-regular fa-file-lines" style="margin-right:5px;"></i> My Notes</div>
+                 <span onclick="toggleNoteEdit('${topicNotesKey}')" style="cursor:pointer; font-size:0.8rem; opacity:0.5;">✏️ Edit</span>
+             </div>
+             <div id="note-view-${topicNotesKey}" class="md-content" style="background:rgba(0,0,0,0.15); padding:12px; border-radius:8px; border:1px solid rgba(255,255,255,0.05); min-height:40px; cursor:pointer; font-size:0.9rem;" onclick="toggleNoteEdit('${topicNotesKey}')">
+                 ${topicNotes ? marked.parse(topicNotes) : '<span style="font-style:italic; opacity:0.4;">Click to add notes...</span>'}
+             </div>
+             <textarea id="note-edit-${topicNotesKey}" class="dark-input md-edit-box" dir="auto" style="display:none; width:100%; min-height:120px; font-size:0.9rem; margin-top:0;" onblur="saveNoteAndRender('${topicNotesKey}')">${topicNotes}</textarea>
+            `;
+
+            detailsBody.appendChild(checkDiv);
+            detailsBody.appendChild(linksDiv);
+            detailsBody.appendChild(resDiv);
+            detailsBody.appendChild(userLinksDiv);
+            detailsBody.appendChild(noteDiv);
+
+            div.appendChild(headerRow);
+            div.appendChild(detailsBody);
+
+            body.appendChild(div);
+        });
+
+        // Toggle Chapter Logic
+        header.addEventListener('click', (e) => {
+            // Prevent toggle if clicking delete or edit button or their children
+            if (e.target.closest('.delete-chapter-btn') || e.target.closest('.edit-chapter-btn') || e.target.closest('.chapter-drag-handle')) return;
+
+            const isExpanded = accordion.classList.contains('expanded');
+            accordion.classList.toggle('expanded');
+            const chevron = header.querySelector('.chapter-chevron');
+            if (chevron) chevron.style.transform = isExpanded ? 'rotate(0deg)' : 'rotate(180deg)';
+        });
+
+        // Set data attribute for chapter identification
+        accordion.setAttribute('data-chapter', chapterName);
+        accordion.setAttribute('data-module', chapterTopics[0]?.module || '');
+
+        accordion.appendChild(header);
+        accordion.appendChild(body);
+        listDiv.appendChild(accordion);
+
+        // Init Sortable for this body (Drag/Drop within chapter)
+        if (isEditMode) {
+            new Sortable(body, {
+                animation: 150,
+                handle: '.topic-drag-handle',
+                ghostClass: 'sortable-ghost',
+                group: 'chapters', // Allow moving between chapters
+                onEnd: function (evt) {
+                    saveTopicOrder(); // Re-saves the entire list based on DOM order.
+                    // Note: Moving between chapters won't persist "Chapter" property change unless implemented.
+                    // But visual order persists until reload.
+                }
+            });
+        }
     });
 
-    // Init Sortable for Topics
-    if (isEditMode) {
+    // Init Sortable for chapters container (Drag/Drop to reorder chapters) - Only in Admin Edit Mode
+    if (isAdmin && isEditMode && listDiv) {
         new Sortable(listDiv, {
-            animation: 150,
-            handle: '.topic-drag-handle',
-            ghostClass: 'sortable-ghost',
-            onEnd: function () {
-                saveTopicOrder();
+            animation: 200,
+            handle: '.chapter-drag-handle',
+            ghostClass: 'sortable-ghost-chapter',
+            draggable: '.chapter-accordion',
+            onEnd: function (evt) {
+                saveChapterOrder(activeModule);
             }
         });
     }
 
-    // Apply initial module filter (if modules exist)
-    if (activeModule && modules.length > 1) {
-        setTimeout(() => filterTopics(activeModule), 0);
-    }
+    // Apply syntax highlighting
+    document.querySelectorAll('.md-content').forEach(view => applySyntaxHighlighting(view));
 
+    // Auto-select first module if none active and multi-module? Handled by default.
 }
 
 // --- TOPIC HELPER FUNCTIONS ---
@@ -2351,17 +2851,6 @@ async function saveTopicOrder() {
     });
 }
 
-async function deleteTopic(index) {
-    if (!confirm("Delete this topic?")) return;
-    currentModalNode.topics.splice(index, 1);
-    renderChecklist();
-    // Save
-    const col = currentModalNode.id.toString().startsWith('p') ? 'global_parallel' : 'global_roadmap';
-    await db.collection(col).doc(currentModalNode.id.toString()).update({
-        topics: currentModalNode.topics
-    });
-}
-
 function applySyntaxHighlighting(containerElement) {
     if (!containerElement) return;
     containerElement.querySelectorAll('pre code').forEach((block) => {
@@ -2370,8 +2859,16 @@ function applySyntaxHighlighting(containerElement) {
 }
 
 async function saveSpecificTopicNote(key, val) {
-    userData.progress[key] = val;
-    await db.collection('users').doc(auth.currentUser.uid).set(userData, { merge: true });
+    if (!val || !val.trim()) {
+        delete userData.progress[key];
+        await db.collection('users').doc(auth.currentUser.uid).update({
+            [`progress.${key}`]: firebase.firestore.FieldValue.delete()
+        });
+    } else {
+        userData.progress[key] = val;
+        await db.collection('users').doc(auth.currentUser.uid).set(userData, { merge: true });
+    }
+    calculateTotalLogs();
 }
 
 function toggleNoteEdit(key) {
@@ -2440,6 +2937,9 @@ async function addTopic() {
 
     renderChecklist();
     await saveNodeUpdate(currentModalNode);
+
+    // Auto-recalculate ALL users' progress
+    await recalculateAllUsersProgressSilent();
 }
 
 async function deleteTopic(index) {
@@ -2447,6 +2947,9 @@ async function deleteTopic(index) {
     currentModalNode.topics.splice(index, 1);
     renderChecklist();
     await saveNodeUpdate(currentModalNode);
+
+    // Auto-recalculate ALL users' progress
+    await recalculateAllUsersProgressSilent();
 }
 
 async function deleteTopicResource(topicIndex, resourceIndex) {
@@ -2477,11 +2980,29 @@ async function editDuration() {
 }
 
 async function saveNodeUpdate(node) {
+    // 🔥 CRITICAL FIX: Use set() with merge to save ALL data
+    // This ensures topics, duration, order, and all other fields persist
+    const nodeData = {
+        id: node.id,
+        title: node.title || '',
+        slug: node.slug || '',
+        topics: node.topics || [],
+        duration: node.duration || '',
+        order: typeof node.order === 'number' ? node.order : 999
+    };
+
+    // Add optional fields if they exist
+    if (node.labs) nodeData.labs = node.labs;
+    if (node.officialDocs) nodeData.officialDocs = node.officialDocs;
+    if (node.freeCourses) nodeData.freeCourses = node.freeCourses;
+
     if (typeof node.id === 'string' && node.id.startsWith('p')) {
-        await db.collection('global_parallel').doc(node.id).update(node);
+        await db.collection('global_parallel').doc(node.id).set(nodeData, { merge: true });
     } else {
-        await db.collection('global_roadmap').doc(node.id.toString()).update(node);
+        await db.collection('global_roadmap').doc(node.id.toString()).set(nodeData, { merge: true });
     }
+
+    console.log('✅ Node saved to Firebase:', node.id);
 }
 
 // --- PROOF OF WORK HELPERS (MODAL) ---
@@ -2615,6 +3136,7 @@ async function saveLog() {
     await db.collection('users').doc(currentUser.uid).update({
         [`logs.${currentModalNode.id}`]: userData.logs[currentModalNode.id]
     });
+    calculateTotalLogs();
 }
 
 function startLogEdit(logIndex) {
@@ -2673,6 +3195,7 @@ async function deleteLog(logIndex) {
     await db.collection('users').doc(currentUser.uid).update({
         [`logs.${currentModalNode.id}`]: logs
     });
+    calculateTotalLogs();
 }
 
 function getIconForUrl(url, type) {
@@ -3130,17 +3653,22 @@ function calculateKnowledgeProgress() {
 function calculateTotalLogs() {
     const countEl = document.getElementById('status-total-logs');
     const footerEl = document.getElementById('status-last-log');
+    // Also use the description element to show breakdown if available, 
+    // or set a title/tooltip on the count element.
+    const container = countEl ? countEl.parentElement : null;
 
     if (!userData) return;
 
-    let totalCount = 0;
+    let logsCount = 0;
+    let notesCount = 0;
+    let linksCount = 0;
     let latestTime = 0;
 
     // 1. Count Captain's Logs (Dated)
     if (userData.logs) {
         Object.values(userData.logs).forEach(logList => {
             if (Array.isArray(logList)) {
-                totalCount += logList.length;
+                logsCount += logList.length;
                 logList.forEach(entry => {
                     if (entry && entry.date) {
                         const time = new Date(entry.date).getTime();
@@ -3157,7 +3685,7 @@ function calculateTotalLogs() {
             if (key.endsWith('_notes')) {
                 const noteContent = userData.progress[key];
                 if (typeof noteContent === 'string' && noteContent.trim() !== "") {
-                    totalCount++;
+                    notesCount++;
                 }
             }
         });
@@ -3167,14 +3695,107 @@ function calculateTotalLogs() {
     if (userData.userLinks) {
         Object.values(userData.userLinks).forEach(linkList => {
             if (Array.isArray(linkList)) {
-                totalCount += linkList.length;
+                linksCount += linkList.length;
             }
         });
     }
 
-    if (countEl) countEl.innerText = totalCount;
+    const totalCount = logsCount + notesCount + linksCount;
+
+    if (countEl) {
+        countEl.innerText = totalCount;
+        countEl.title = `Logs: ${logsCount}, Notes: ${notesCount}, Links: ${linksCount} (Click for details)`;
+        countEl.style.cursor = "help";
+
+        // Remove old listeners to avoid duplicates
+        const newEl = countEl.cloneNode(true);
+        countEl.parentNode.replaceChild(newEl, countEl);
+
+        newEl.addEventListener('click', async () => {
+            // 1. Build Valid Keys Map
+            const validNoteKeys = new Set();
+            const allNodes = [...(window.roadmapNodes || []), ...(window.parallelNodes || [])];
+            allNodes.forEach(node => {
+                if (node.topics) {
+                    node.topics.forEach(t => {
+                        validNoteKeys.add(`${node.id}_${t.id}_notes`);
+                    });
+                }
+            });
+
+            let msg = `🔍 Intel Breakdown:\n\n`;
+            let orphanKeys = [];
+
+            msg += `📝 Captain's Logs: ${logsCount}\n`;
+            if (userData.logs) {
+                Object.keys(userData.logs).forEach(k => {
+                    const c = userData.logs[k].length;
+                    if (c > 0) msg += `   - Node ${k}: ${c} logs\n`;
+                });
+            }
+
+            msg += `\n🗒️ Topic Notes: ${notesCount}\n`;
+            if (userData.progress) {
+                Object.keys(userData.progress).forEach(k => {
+                    if (k.endsWith('_notes')) {
+                        const val = userData.progress[k];
+                        if (typeof val === 'string' && val.trim() !== "") {
+                            const isOrphan = !validNoteKeys.has(k);
+                            msg += `   - ${k.replace('_notes', '').toUpperCase()}${isOrphan ? ' (ORPHAN - Will be cleaned)' : ''}\n`;
+                            if (isOrphan) orphanKeys.push(k);
+                        }
+                    }
+                });
+            }
+
+            msg += `\n🔗 Personal Links: ${linksCount}\n`;
+            if (userData.userLinks) {
+                Object.keys(userData.userLinks).forEach(k => {
+                    const c = userData.userLinks[k].length;
+                    if (c > 0) {
+                        const noteKeyEquivalent = k + '_notes';
+                        const isOrphan = !validNoteKeys.has(noteKeyEquivalent);
+                        msg += `   - ${k}: ${c} links${isOrphan ? ' (ORPHAN - Will be cleaned)' : ''}\n`;
+                        if (isOrphan) {
+                            orphanKeys.push(`userLinks.${k}`);
+                        }
+                    }
+                });
+            }
+
+            if (orphanKeys.length > 0) {
+                msg += `\n⚠️ FOUND ${orphanKeys.length} GHOST ITEMS! Click OK to cleanup.`;
+                if (confirm(msg)) {
+                    // Cleanup
+                    const updatePayload = {};
+                    orphanKeys.forEach(k => {
+                        if (k.startsWith('userLinks.')) {
+                            const realKey = k.split('.')[1];
+                            updatePayload[`userLinks.${realKey}`] = firebase.firestore.FieldValue.delete();
+                            delete userData.userLinks[realKey];
+                        } else {
+                            delete userData.progress[k];
+                            updatePayload[`progress.${k}`] = firebase.firestore.FieldValue.delete();
+                        }
+                    });
+
+                    await db.collection('users').doc(currentUser.uid).update(updatePayload);
+                    calculateTotalLogs();
+                    alert("✅ Ghosts busted! Count updated.");
+                }
+            } else {
+                alert(msg);
+            }
+        });
+    }
+
+    if (container) {
+        // Optional: Update the description to show breakdown if the user prefers visibility
+        // For now, simpler is better, let's stick to the tooltip on the number
+    }
+
     if (footerEl) {
-        footerEl.innerText = latestTime > 0
+        footerEl.innerHTML = latestTime > 0
             ? `Latest: ${new Date(latestTime).toLocaleDateString('en-GB')}`
             : "Latest: None";
     }
@@ -3196,6 +3817,12 @@ window.toggleChat = function () {
     } else {
         win.classList.add('visible');
         if (btn) btn.classList.add('pushed-down');
+
+        // Send Welcome Message if chat is empty
+        const chatBox = document.getElementById('chat-messages');
+        if (chatBox && chatBox.children.length === 0) {
+            sendWelcomeMessage();
+        }
 
         // Focus input
         setTimeout(() => {
@@ -3240,6 +3867,82 @@ function showLoadingIndicator() {
 function removeLoadingIndicator(id) {
     const el = document.getElementById(id);
     if (el) el.remove();
+}
+
+// Helper: Get Next Incomplete Topic
+function getNextTopic() {
+    // Loop through roadmap nodes to find the first incomplete topic
+    for (const node of roadmapNodes) {
+        const userProgress = userData.progress[node.id] || [];
+        const nodeTopics = node.topics || [];
+
+        for (const topic of nodeTopics) {
+            if (!userProgress.includes(topic.id)) {
+                return {
+                    courseName: node.title,
+                    topicTitle: topic.title,
+                    topicId: topic.id
+                };
+            }
+        }
+    }
+
+    // If all roadmap topics done, check parallel tracks
+    for (const node of parallelNodes) {
+        const userProgress = userData.progress[node.id] || [];
+        const nodeTopics = node.topics || [];
+
+        for (const topic of nodeTopics) {
+            if (!userProgress.includes(topic.id)) {
+                return {
+                    courseName: node.title,
+                    topicTitle: topic.title,
+                    topicId: topic.id
+                };
+            }
+        }
+    }
+
+    // All done!
+    return null;
+}
+
+// Welcome Message
+function sendWelcomeMessage() {
+    const userName = (userData && userData.displayName) ? userData.displayName : "Engineer";
+
+    // Calculate Progress
+    let totalTopics = 0;
+    let completedTopics = 0;
+
+    roadmapNodes.forEach(node => {
+        totalTopics += (node.topics || []).length;
+        completedTopics += (userData.progress[node.id] || []).length;
+    });
+
+    parallelNodes.forEach(node => {
+        totalTopics += (node.topics || []).length;
+        completedTopics += (userData.progress[node.id] || []).length;
+    });
+
+    const percent = totalTopics > 0 ? Math.round((completedTopics / totalTopics) * 100) : 0;
+
+    // Get Next Topic
+    const nextTopic = getNextTopic();
+
+    let welcomeMsg = `ازيك يا **${userName}** 👋\n\n`;
+    welcomeMsg += `أهلاً بيك في **Your DevOps Galaxy** 🌌\n\n`;
+    welcomeMsg += `انت دلوقتي مخلص **${percent}%**`;
+
+    if (nextTopic) {
+        welcomeMsg += ` والنهاردة هنذاكر **${nextTopic.topicTitle}**\n\n`;
+    } else {
+        welcomeMsg += `\n\n🎉 **مبروك! خلصت كل التوبيكات!**\n\n`;
+    }
+
+    welcomeMsg += `أنا جاهز لكل أسئلتك يا هندسة 🚀`;
+
+    renderMessage(welcomeMsg, 'bot');
 }
 
 // ==========================================
@@ -3296,7 +3999,45 @@ function getUserContext() {
 
         const percent = totalTopics > 0 ? Math.round((completedTopics / totalTopics) * 100) : 0;
 
-        return `[SYSTEM CONTEXT: User="${userName}", GlobalProgress="${completedTopics}/${totalTopics} (${percent}%)". The user is currently on the DevOps Galaxy Roadmap. Use this info to tailor your answer.]`;
+        // Get Next Topic
+        const nextTopic = getNextTopic();
+        let nextTopicInfo = "";
+        if (nextTopic) {
+            nextTopicInfo = `NextTopic="${nextTopic.courseName} → ${nextTopic.topicTitle}", `;
+        }
+
+        // Collect User Notes (Last 5 most recent entries)
+        let notesContext = "";
+        const allLogs = [];
+
+        // Gather all logs with timestamps
+        Object.keys(userData.logs || {}).forEach(nodeId => {
+            const logs = userData.logs[nodeId] || [];
+            logs.forEach(log => {
+                if (log.text && log.text.trim()) {
+                    allLogs.push({
+                        date: log.date,
+                        text: log.text,
+                        nodeId: nodeId
+                    });
+                }
+            });
+        });
+
+        // Sort by date (newest first) - keeping them sorted but sending ALL
+        allLogs.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+        // No longer slicing! Sending EVERYTHING.
+        const allUserLogs = allLogs;
+
+        if (allUserLogs.length > 0) {
+            notesContext = "\nAll User Notes (Newest First):\n";
+            allUserLogs.forEach((log, idx) => {
+                notesContext += `${idx + 1}. [Date: ${log.date.split('T')[0]}] ${log.text}\n`;
+            });
+        }
+
+        return `[SYSTEM CONTEXT: User="${userName}", GlobalProgress="${completedTopics}/${totalTopics} (${percent}%)", ${nextTopicInfo}${notesContext}The user is currently on the DevOps Galaxy Roadmap. Use this info to tailor your answer.]`;
 
     } catch (e) {
         console.warn("Context generation failed:", e);
@@ -3420,7 +4161,7 @@ function updateDevOpsTip() {
     if (!tipElement) return;
 
     const now = Date.now();
-    const durationPerTip = 3 * 60 * 60 * 1000;
+    const durationPerTip = 0.2 * 60 * 60 * 1000;
     const tipIndex = Math.floor(now / durationPerTip) % devopsTipsList.length;
 
     tipElement.innerText = `"${devopsTipsList[tipIndex]}"`;
@@ -3430,6 +4171,3 @@ document.addEventListener('DOMContentLoaded', () => {
     updateDevOpsTip();
     setInterval(updateDevOpsTip, 60000);
 });
-
-
-

@@ -793,15 +793,13 @@ function renderHeatmap() {
         }
     });
 
-    // 2. Generate grid for the last 60 days (ending today)
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const startDate = new Date(today);
-    startDate.setDate(startDate.getDate() - 59); // 60 days including today
+    // 2. Generate grid from Feb 1, 2026 to May 31, 2026
+    const startDate = new Date('2026-02-01');
+    const endDate = new Date('2026-05-31');
 
     const currentDate = new Date(startDate);
 
-    while (currentDate <= today) {
+    while (currentDate <= endDate) {
         const dateStr = currentDate.toISOString().split('T')[0];
 
         const sq = document.createElement('div');

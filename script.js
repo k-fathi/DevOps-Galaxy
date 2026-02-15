@@ -322,6 +322,7 @@ async function toggleTopicComplete(topicId) {
 
     const linuxProgress = userData.progress['linux'] || [];
     const index = linuxProgress.indexOf(topicId);
+    const isCompleting = index === -1; // true if checking, false if unchecking
 
     if (index > -1) {
         // Remove from completed
@@ -333,16 +334,39 @@ async function toggleTopicComplete(topicId) {
 
     userData.progress['linux'] = linuxProgress;
 
+    // Update lastActive timestamp
+    const now = new Date().toISOString();
+    userData.lastActive = now;
+
+    // Track activity history (only on completion)
+    if (isCompleting) {
+        if (!userData.activityHistory) userData.activityHistory = [];
+        userData.activityHistory.push({ date: now, type: 'topic_complete' });
+    }
+
+    // Build Firestore update payload
+    const updatePayload = {
+        'progress.linux': linuxProgress,
+        lastActive: now
+    };
+    if (isCompleting) {
+        updatePayload.activityHistory = userData.activityHistory;
+    }
+
     // Update Firestore
-    await db.collection('users').doc(currentUser.uid).update({
-        'progress.linux': linuxProgress
-    });
+    await db.collection('users').doc(currentUser.uid).update(updatePayload);
 
     // Recalculate global progress
     await recalculateGlobalProgress();
 
     // Update chapter progress indicators in the accordion
     updateChapterProgress();
+
+    // Recalculate health immediately
+    calculateClusterHealth();
+
+    // Refresh heatmap if profile modal is open
+    renderHeatmap();
 
     console.log(`✅ Topic ${topicId} toggled.`);
 }
@@ -748,10 +772,10 @@ function renderHeatmap() {
     if (!container) return;
     container.innerHTML = '';
 
-    // 1. Collect ALL activity dates (logs, progress, resources)
+    // 1. Aggregate activity counts per day from ALL sources
     const activityDates = {};
 
-    // A. Logs (Notes/Diary entries)
+    // A. Logs (Captain's Log entries)
     Object.values(userData.logs || {}).forEach(nodeLogs => {
         nodeLogs.forEach(log => {
             if (log.date) {
@@ -761,40 +785,43 @@ function renderHeatmap() {
         });
     });
 
-    // B. Progress (Topic completions) - check actual completion dates from logs
-    // Since we don't have explicit completion timestamps, we'll use logs as proxy
-    // This is already covered by logs above
+    // B. Activity History (topic completions, etc.)
+    (userData.activityHistory || []).forEach(entry => {
+        if (entry.date) {
+            const dateStr = entry.date.split('T')[0];
+            activityDates[dateStr] = (activityDates[dateStr] || 0) + 1;
+        }
+    });
 
-    // C. Resources (if you want to track resource additions in the future)
-    // You can add this later if needed
-
-    // 2. Generate dates from Feb 1, 2026 to May 31, 2026
-    const startDate = new Date('2026-02-01');
-    const endDate = new Date('2026-05-31');
+    // 2. Generate grid for the last 60 days (ending today)
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const startDate = new Date(today);
+    startDate.setDate(startDate.getDate() - 59); // 60 days including today
 
     const currentDate = new Date(startDate);
 
-    while (currentDate <= endDate) {
+    while (currentDate <= today) {
         const dateStr = currentDate.toISOString().split('T')[0];
 
         const sq = document.createElement('div');
         sq.className = 'heatmap-sq';
 
-        const activityCount = activityDates[dateStr] || 0;
+        const count = activityDates[dateStr] || 0;
 
-        if (activityCount > 0) {
-            sq.classList.add('active');
-            // Optional: Add intensity levels based on activity count
-            if (activityCount >= 5) {
-                sq.style.background = 'var(--primary)'; // High activity
-                sq.style.boxShadow = '0 0 8px var(--primary)';
-            } else if (activityCount >= 3) {
-                sq.style.background = 'rgba(0, 242, 255, 0.7)'; // Medium
-            }
-        }
+        // Assign intensity level (GitHub-style)
+        let level = 0;
+        if (count >= 7) level = 4;
+        else if (count >= 5) level = 3;
+        else if (count >= 3) level = 2;
+        else if (count >= 1) level = 1;
 
-        // Add tooltip with date and activity count
-        sq.title = `${dateStr}${activityCount > 0 ? ` (${activityCount} activities)` : ' (No activity)'}`;
+        sq.setAttribute('data-level', level);
+
+        // Tooltip
+        sq.title = count > 0
+            ? `${count} activit${count === 1 ? 'y' : 'ies'} on ${dateStr}`
+            : `No activity on ${dateStr}`;
 
         container.appendChild(sq);
 
@@ -2859,16 +2886,25 @@ function applySyntaxHighlighting(containerElement) {
 }
 
 async function saveSpecificTopicNote(key, val) {
+    const now = new Date().toISOString();
+    userData.lastActive = now; // Update local state immediately
+
     if (!val || !val.trim()) {
         delete userData.progress[key];
         await db.collection('users').doc(auth.currentUser.uid).update({
-            [`progress.${key}`]: firebase.firestore.FieldValue.delete()
+            [`progress.${key}`]: firebase.firestore.FieldValue.delete(),
+            lastActive: now
         });
     } else {
         userData.progress[key] = val;
-        await db.collection('users').doc(auth.currentUser.uid).set(userData, { merge: true });
+        // Merge true is safer, but update is fine if document exists (which it should)
+        await db.collection('users').doc(auth.currentUser.uid).set({
+            ...userData,
+            lastActive: now
+        }, { merge: true });
     }
     calculateTotalLogs();
+    calculateClusterHealth(); // Trigger health update
 }
 
 function toggleNoteEdit(key) {
@@ -3125,18 +3161,23 @@ function renderLogs() {
 async function saveLog() {
     const txt = document.getElementById('diary-input').value;
     if (!txt) return;
-    const newLog = { date: new Date().toISOString(), text: txt };
+
+    const now = new Date().toISOString();
+    const newLog = { date: now, text: txt };
 
     if (!userData.logs[currentModalNode.id]) userData.logs[currentModalNode.id] = [];
     userData.logs[currentModalNode.id].push(newLog);
+    userData.lastActive = now; // Update local state
 
     document.getElementById('diary-input').value = '';
     renderLogs();
 
     await db.collection('users').doc(currentUser.uid).update({
-        [`logs.${currentModalNode.id}`]: userData.logs[currentModalNode.id]
+        [`logs.${currentModalNode.id}`]: userData.logs[currentModalNode.id],
+        lastActive: now
     });
     calculateTotalLogs();
+    calculateClusterHealth(); // Trigger health update
 }
 
 function startLogEdit(logIndex) {
@@ -3607,17 +3648,23 @@ function calculateClusterHealth() {
     const dot = document.querySelector('.health-dot');
     const text = document.getElementById('health-text');
 
-    // Logic: Look for any topic completed in last 72 hours
-    let lastActivity = 0;
-    // Check logs for recent entries
-    Object.values(userData.logs || {}).forEach(logList => {
-        logList.forEach(entry => {
-            const time = new Date(entry.date).getTime();
-            if (time > lastActivity) lastActivity = time;
-        });
-    });
+    // 1. Check userData.lastActive first (New Logic)
+    let lastActivityTime = 0;
 
-    const isHealthy = (Date.now() - lastActivity) < (3 * 24 * 60 * 60 * 1000);
+    if (userData.lastActive) {
+        lastActivityTime = new Date(userData.lastActive).getTime();
+    } else {
+        // 2. Fallback: Check logs for recent entries (Backward Compatibility)
+        Object.values(userData.logs || {}).forEach(logList => {
+            logList.forEach(entry => {
+                const time = new Date(entry.date).getTime();
+                if (time > lastActivityTime) lastActivityTime = time;
+            });
+        });
+    }
+
+    // Threshold: 72 Hours
+    const isHealthy = (Date.now() - lastActivityTime) < (72 * 60 * 60 * 1000);
 
     if (isHealthy) {
         if (dot) dot.className = 'health-dot healthy';

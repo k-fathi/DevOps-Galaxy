@@ -1679,13 +1679,28 @@ input:checked+.slider:before {
     cursor: pointer;
 }
 
-.heatmap-sq.active {
-    background: var(--success);
-    box-shadow: 0 0 5px var(--success);
+/* Level 0 is the default (no data-level attr or data-level="0") — already styled above */
+
+.heatmap-sq[data-level="1"] {
+    background: rgba(0, 242, 255, 0.25);
+}
+
+.heatmap-sq[data-level="2"] {
+    background: rgba(0, 242, 255, 0.50);
+}
+
+.heatmap-sq[data-level="3"] {
+    background: rgba(0, 242, 255, 0.75);
+    box-shadow: 0 0 4px rgba(0, 242, 255, 0.3);
+}
+
+.heatmap-sq[data-level="4"] {
+    background: var(--primary);
+    box-shadow: 0 0 10px var(--primary), 0 0 20px rgba(0, 242, 255, 0.4);
 }
 
 .heatmap-sq:hover {
-    transform: scale(1.5);
+    transform: scale(1.8);
     z-index: 5;
 }
 

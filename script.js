@@ -760,6 +760,25 @@ function openProfileModal() {
     const modal = document.getElementById('profile-modal');
     document.getElementById('profile-name-input').value = userData.displayName || currentUser.displayName || '';
 
+    // Profile Picture Logic
+    const avatarImg = document.getElementById('profile-avatar');
+    const emojiFallback = document.getElementById('profile-emoji-fallback');
+    const photoURL = userData.photoURL || (currentUser && currentUser.photoURL) || '';
+
+    if (photoURL) {
+        avatarImg.src = photoURL;
+        avatarImg.style.display = 'inline-block';
+        emojiFallback.style.display = 'none';
+        // Fallback if image fails to load
+        avatarImg.onerror = () => {
+            avatarImg.style.display = 'none';
+            emojiFallback.style.display = 'inline';
+        };
+    } else {
+        avatarImg.style.display = 'none';
+        emojiFallback.style.display = 'inline';
+    }
+
     // Render Heatmap before Badges
     renderHeatmap();
 

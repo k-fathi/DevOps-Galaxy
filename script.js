@@ -2546,10 +2546,55 @@ function renderChecklist(filterModule = null) {
                 }
                 detailsBody.innerHTML += resHtml;
 
-                // Notes
+                // Notes - Dual Pane System
                 const topicNotesKey = currentModalNode.id + '_' + t.id + '_notes';
                 const topicNotes = userData.progress[topicNotesKey] || "";
-                detailsBody.innerHTML += `<div style="margin-top:10px;"><div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;"><div style="font-size:0.75rem; color:var(--text-muted); font-weight:600;"><i class="fa-regular fa-file-lines" style="margin-right:5px;"></i> My Notes</div><span onclick="toggleNoteEdit('${topicNotesKey}')" style="cursor:pointer; font-size:0.8rem; opacity:0.5;">✏️ Edit</span></div><div id="note-view-${topicNotesKey}" class="md-content" style="background:rgba(0,0,0,0.15); padding:12px; border-radius:8px; border:1px solid rgba(255,255,255,0.05); min-height:40px; cursor:pointer; font-size:0.9rem;" onclick="toggleNoteEdit('${topicNotesKey}')">${topicNotes ? marked.parse(topicNotes) : '<span style="font-style:italic; opacity:0.4;">Click to add notes...</span>'}</div><textarea id="note-edit-${topicNotesKey}" class="dark-input md-edit-box" dir="auto" style="display:none; width:100%; min-height:120px; font-size:0.9rem; margin-top:0;" onblur="saveNoteAndRender('${topicNotesKey}')">${topicNotes}</textarea></div>`;
+
+                // Determine Admin Notes (Optional: retrieve from t.adminNotes if implemented, else fallback)
+                const adminNotes = t.adminNotes || "No official documentation provided for this topic yet.";
+
+                detailsBody.innerHTML += `
+                <div style="margin-top:10px;">
+                    <!-- Sleek Cyberpunk/Tailwind-style Tabs -->
+                    <div style="display:flex; gap:10px; margin-bottom:10px; border-bottom:1px solid rgba(255,255,255,0.05); padding-bottom:8px;">
+                        <button id="tab-btn-admin-${topicNotesKey}" onclick="switchNoteTab('${topicNotesKey}', 'admin')" 
+                            style="background:rgba(0, 242, 255, 0.1); color:#00f2ff; border:1px solid rgba(0,242,255,0.3); padding:6px 14px; border-radius:20px; font-size:0.75rem; font-weight:600; cursor:pointer; text-transform:uppercase; letter-spacing:0.5px; transition:0.3s; box-shadow:0 0 10px rgba(0,242,255,0.1);">
+                            <i class="fa-solid fa-book-journal-whills" style="margin-right:5px;"></i> Captain's Log
+                        </button>
+                        <button id="tab-btn-user-${topicNotesKey}" onclick="switchNoteTab('${topicNotesKey}', 'user')" 
+                            style="background:transparent; color:var(--text-muted); border:1px solid transparent; padding:6px 14px; border-radius:20px; font-size:0.75rem; font-weight:600; cursor:pointer; text-transform:uppercase; letter-spacing:0.5px; transition:0.3s;">
+                            <i class="fa-solid fa-user-astronaut" style="margin-right:5px;"></i> My Sandbox
+                        </button>
+                    </div>
+
+                    <!-- Pane 1: Captain's Log (Admin / Read-Only for Users) -->
+                    <div id="pane-admin-${topicNotesKey}" class="admin-note-pane" style="display:block; background:#0f172a; padding:15px; border-radius:8px; border:1px solid rgba(0,242,255,0.2); box-shadow: inset 0 0 15px rgba(0,242,255,0.05); margin-bottom:10px;">
+                        ${isAdmin && isEditMode ? `
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                            <div style="font-size:0.75rem; color:#00f2ff; font-weight:600; text-transform:uppercase; letter-spacing:0.5px;">Admin Controls</div>
+                            <span id="edit-icon-admin-${topicNotesKey}" onclick="toggleAdminNoteEdit('${topicNotesKey}')" style="cursor:pointer; font-size:0.8rem; color:var(--primary);">✏️ Edit Log</span>
+                        </div>
+                        ` : ''}
+                        <div id="note-view-admin-${topicNotesKey}" class="md-content" style="font-size:0.9rem;">
+                            ${marked.parse(adminNotes)}
+                        </div>
+                        ${isAdmin && isEditMode ? `
+                        <textarea id="note-edit-admin-${topicNotesKey}" class="dark-input md-edit-box" dir="auto" style="display:none; width:100%; min-height:120px; font-size:0.9rem; margin-top:0;" onblur="saveAdminNoteAndRender('${topicNotesKey}', '${t.id}')">${adminNotes !== "No official documentation provided for this topic yet." ? t.adminNotes || '' : ''}</textarea>
+                        ` : ''}
+                    </div>
+
+                    <!-- Pane 2: My Sandbox (User Editable) -->
+                    <div id="pane-user-${topicNotesKey}" style="display:none;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                            <div style="font-size:0.75rem; color:var(--text-muted); font-weight:600;"><i class="fa-regular fa-file-lines" style="margin-right:5px;"></i> My Notes</div>
+                            <span onclick="toggleNoteEdit('${topicNotesKey}')" style="cursor:pointer; font-size:0.8rem; opacity:0.5;">✏️ Edit</span>
+                        </div>
+                        <div id="note-view-${topicNotesKey}" class="md-content" style="background:rgba(0,0,0,0.15); padding:12px; border-radius:8px; border:1px solid rgba(255,255,255,0.05); min-height:40px; cursor:pointer; font-size:0.9rem;" onclick="toggleNoteEdit('${topicNotesKey}')">
+                            ${topicNotes ? marked.parse(topicNotes) : '<span style="font-style:italic; opacity:0.4;">Click to add notes...</span>'}
+                        </div>
+                        <textarea id="note-edit-${topicNotesKey}" class="dark-input md-edit-box" dir="auto" style="display:none; width:100%; min-height:120px; font-size:0.9rem; margin-top:0;" onblur="saveNoteAndRender('${topicNotesKey}')">${topicNotes}</textarea>
+                    </div>
+                </div>`;
 
                 div.appendChild(headerRow);
                 div.appendChild(detailsBody);
@@ -2725,19 +2770,54 @@ function renderChecklist(filterModule = null) {
                 userLinksDiv.innerHTML += `<div style="font-size:0.8rem; font-style:italic; opacity:0.5;">No personal links yet.</div>`;
             }
 
-            // 5. Notes
+            // 5. Notes - Dual Pane System
             const topicNotesKey = currentModalNode.id + '_' + t.id + '_notes';
             const topicNotes = userData.progress[topicNotesKey] || "";
+            const adminNotes = t.adminNotes || "No official documentation provided for this topic yet.";
+
             const noteDiv = document.createElement('div');
             noteDiv.innerHTML = `
-             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-                 <div style="font-size:0.75rem; color:var(--text-muted); font-weight:600; text-transform:uppercase; letter-spacing:0.5px;"><i class="fa-regular fa-file-lines" style="margin-right:5px;"></i> My Notes</div>
-                 <span onclick="toggleNoteEdit('${topicNotesKey}')" style="cursor:pointer; font-size:0.8rem; opacity:0.5;">✏️ Edit</span>
+             <div style="margin-top:10px;">
+                 <!-- Sleek Cyberpunk/Tailwind-style Tabs -->
+                 <div style="display:flex; gap:10px; margin-bottom:10px; border-bottom:1px solid rgba(255,255,255,0.05); padding-bottom:8px;">
+                     <button id="tab-btn-admin-${topicNotesKey}" onclick="switchNoteTab('${topicNotesKey}', 'admin')" 
+                         style="background:rgba(0, 242, 255, 0.1); color:#00f2ff; border:1px solid rgba(0,242,255,0.3); padding:6px 14px; border-radius:20px; font-size:0.75rem; font-weight:600; cursor:pointer; text-transform:uppercase; letter-spacing:0.5px; transition:0.3s; box-shadow:0 0 10px rgba(0,242,255,0.1);">
+                         <i class="fa-solid fa-book-journal-whills" style="margin-right:5px;"></i> Captain's Log
+                     </button>
+                     <button id="tab-btn-user-${topicNotesKey}" onclick="switchNoteTab('${topicNotesKey}', 'user')" 
+                         style="background:transparent; color:var(--text-muted); border:1px solid transparent; padding:6px 14px; border-radius:20px; font-size:0.75rem; font-weight:600; cursor:pointer; text-transform:uppercase; letter-spacing:0.5px; transition:0.3s;">
+                         <i class="fa-solid fa-user-astronaut" style="margin-right:5px;"></i> My Sandbox
+                     </button>
+                 </div>
+
+                 <!-- Pane 1: Captain's Log (Admin / Read-Only for Users) -->
+                 <div id="pane-admin-${topicNotesKey}" class="admin-note-pane" style="display:block; background:#0f172a; padding:15px; border-radius:8px; border:1px solid rgba(0,242,255,0.2); box-shadow: inset 0 0 15px rgba(0,242,255,0.05); margin-bottom:10px;">
+                     ${isAdmin && isEditMode ? `
+                     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                         <div style="font-size:0.75rem; color:#00f2ff; font-weight:600; text-transform:uppercase; letter-spacing:0.5px;">Admin Controls</div>
+                         <span id="edit-icon-admin-${topicNotesKey}" onclick="toggleAdminNoteEdit('${topicNotesKey}')" style="cursor:pointer; font-size:0.8rem; color:var(--primary);">✏️ Edit Log</span>
+                     </div>
+                     ` : ''}
+                     <div id="note-view-admin-${topicNotesKey}" class="md-content" style="font-size:0.9rem;">
+                         ${marked.parse(adminNotes)}
+                     </div>
+                     ${isAdmin && isEditMode ? `
+                     <textarea id="note-edit-admin-${topicNotesKey}" class="dark-input md-edit-box" dir="auto" style="display:none; width:100%; min-height:120px; font-size:0.9rem; margin-top:0;" onblur="saveAdminNoteAndRender('${topicNotesKey}', '${t.id}')">${adminNotes !== "No official documentation provided for this topic yet." ? t.adminNotes || '' : ''}</textarea>
+                     ` : ''}
+                 </div>
+
+                 <!-- Pane 2: My Sandbox (User Editable) -->
+                 <div id="pane-user-${topicNotesKey}" style="display:none;">
+                     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                         <div style="font-size:0.75rem; color:var(--text-muted); font-weight:600; text-transform:uppercase; letter-spacing:0.5px;"><i class="fa-regular fa-file-lines" style="margin-right:5px;"></i> My Notes</div>
+                         <span onclick="toggleNoteEdit('${topicNotesKey}')" style="cursor:pointer; font-size:0.8rem; opacity:0.5;">✏️ Edit</span>
+                     </div>
+                     <div id="note-view-${topicNotesKey}" class="md-content" style="background:rgba(0,0,0,0.15); padding:12px; border-radius:8px; border:1px solid rgba(255,255,255,0.05); min-height:40px; cursor:pointer; font-size:0.9rem;" onclick="toggleNoteEdit('${topicNotesKey}')">
+                         ${topicNotes ? marked.parse(topicNotes) : '<span style="font-style:italic; opacity:0.4;">Click to add notes...</span>'}
+                     </div>
+                     <textarea id="note-edit-${topicNotesKey}" class="dark-input md-edit-box" dir="auto" style="display:none; width:100%; min-height:120px; font-size:0.9rem; margin-top:0;" onblur="saveNoteAndRender('${topicNotesKey}')">${topicNotes}</textarea>
+                 </div>
              </div>
-             <div id="note-view-${topicNotesKey}" class="md-content" style="background:rgba(0,0,0,0.15); padding:12px; border-radius:8px; border:1px solid rgba(255,255,255,0.05); min-height:40px; cursor:pointer; font-size:0.9rem;" onclick="toggleNoteEdit('${topicNotesKey}')">
-                 ${topicNotes ? marked.parse(topicNotes) : '<span style="font-style:italic; opacity:0.4;">Click to add notes...</span>'}
-             </div>
-             <textarea id="note-edit-${topicNotesKey}" class="dark-input md-edit-box" dir="auto" style="display:none; width:100%; min-height:120px; font-size:0.9rem; margin-top:0;" onblur="saveNoteAndRender('${topicNotesKey}')">${topicNotes}</textarea>
             `;
 
             detailsBody.appendChild(checkDiv);
@@ -2959,6 +3039,104 @@ async function saveNoteAndRender(key) {
     // Save to DB
     await saveSpecificTopicNote(key, val);
     showToast("✅ Note Saved");
+}
+
+// --- SWITCH NOTE TAB (Dual Pane) ---
+function switchNoteTab(topicKey, tabName) {
+    const adminPane = document.getElementById(`pane-admin-${topicKey}`);
+    const userPane = document.getElementById(`pane-user-${topicKey}`);
+    const adminBtn = document.getElementById(`tab-btn-admin-${topicKey}`);
+    const userBtn = document.getElementById(`tab-btn-user-${topicKey}`);
+
+    if (tabName === 'admin') {
+        adminPane.style.display = 'block';
+        userPane.style.display = 'none';
+
+        // Active Admin styling (Cyberpunk Cyan)
+        adminBtn.style.background = 'rgba(0, 242, 255, 0.1)';
+        adminBtn.style.color = '#00f2ff';
+        adminBtn.style.borderColor = 'rgba(0, 242, 255, 0.3)';
+        adminBtn.style.boxShadow = '0 0 10px rgba(0, 242, 255, 0.1)';
+
+        // Inactive User styling
+        userBtn.style.background = 'transparent';
+        userBtn.style.color = 'var(--text-muted)';
+        userBtn.style.borderColor = 'transparent';
+        userBtn.style.boxShadow = 'none';
+    } else {
+        adminPane.style.display = 'none';
+        userPane.style.display = 'block';
+
+        // Active User styling (Secondary/Purple or White)
+        userBtn.style.background = 'rgba(255, 255, 255, 0.05)';
+        userBtn.style.color = 'white';
+        userBtn.style.borderColor = 'rgba(255, 255, 255, 0.1)';
+        userBtn.style.boxShadow = 'none';
+
+        // Inactive Admin styling
+        adminBtn.style.background = 'transparent';
+        adminBtn.style.color = 'var(--text-muted)';
+        adminBtn.style.borderColor = 'transparent';
+        adminBtn.style.boxShadow = 'none';
+    }
+}
+
+// --- ADMIN NOTE EDIT LOGIC ---
+function toggleAdminNoteEdit(topicNotesKey) {
+    const view = document.getElementById(`note-view-admin-${topicNotesKey}`);
+    const edit = document.getElementById(`note-edit-admin-${topicNotesKey}`);
+    const icon = document.getElementById(`edit-icon-admin-${topicNotesKey}`);
+
+    if (view.style.display !== 'none') {
+        view.style.display = 'none';
+        edit.style.display = 'block';
+        edit.focus();
+        if (icon) icon.innerHTML = '✕ Cancel Edit';
+    } else {
+        view.style.display = 'block';
+        edit.style.display = 'none';
+        if (icon) icon.innerHTML = '✏️ Edit Log';
+    }
+}
+
+async function saveAdminNoteAndRender(topicNotesKey, topicId) {
+    const view = document.getElementById(`note-view-admin-${topicNotesKey}`);
+    const edit = document.getElementById(`note-edit-admin-${topicNotesKey}`);
+    const icon = document.getElementById(`edit-icon-admin-${topicNotesKey}`);
+    const val = edit.value.trim();
+
+    // Find the topic in currentModalNode
+    const topic = currentModalNode.topics.find(t => t.id === topicId);
+    if (!topic) return;
+
+    // Update Local Topic Data
+    if (val) {
+        topic.adminNotes = val;
+        view.innerHTML = marked.parse(val);
+    } else {
+        delete topic.adminNotes;
+        view.innerHTML = marked.parse("No official documentation provided for this topic yet.");
+    }
+
+    // Update UI immediately
+    view.style.display = 'block';
+    edit.style.display = 'none';
+    if (icon) icon.innerHTML = '✏️ Edit Log';
+
+    // Apply syntax highlighting
+    applySyntaxHighlighting(view);
+
+    // Persist to Firestore
+    const col = currentModalNode.id.toString().startsWith('p') ? 'global_parallel' : 'global_roadmap';
+    try {
+        await db.collection(col).doc(currentModalNode.id.toString()).update({
+            topics: currentModalNode.topics
+        });
+        showToast("✅ Admin Log Updated & Saved");
+    } catch (err) {
+        console.error("Error saving admin notes:", err);
+        showToast("⚠️ Error saving admin notes", true);
+    }
 }
 
 async function addTopic() {

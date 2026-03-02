@@ -654,6 +654,32 @@
         </div>
     </div>
 
+    <!-- Reader / Theater Mode Modal -->
+    <div id="reader-modal" class="modal-card-overlay">
+        <div class="reader-card">
+            <div class="reader-header">
+                <h2 id="reader-modal-title">📖 Reading Terminal</h2>
+                <div style="display:flex; gap:10px; align-items:center;">
+                    <!-- View mode buttons -->
+                    <button id="reader-edit-btn" class="reader-header-btn" style="display:none;"
+                        onclick="readerStartEdit()">✏️ Edit</button>
+                    <!-- Edit mode buttons (hidden until edit) -->
+                    <button id="reader-save-btn" class="reader-header-btn reader-save" style="display:none;"
+                        onclick="readerConfirmSave()">✓ Save</button>
+                    <button id="reader-cancel-btn" class="reader-header-btn reader-cancel" style="display:none;"
+                        onclick="readerCancelEdit()">✕ Cancel</button>
+                    <button class="icon-btn" onclick="closeReaderModal()"
+                        style="width:36px; height:36px; font-size:1.1rem; flex-shrink:0;">✕</button>
+                </div>
+            </div>
+            <!-- View mode: rendered markdown -->
+            <div id="reader-modal-body" class="reader-body md-content"></div>
+            <!-- Edit mode: raw textarea -->
+            <textarea id="reader-edit-textarea" class="reader-edit-area dark-input" dir="auto" style="display:none;"
+                placeholder="Write your notes in Markdown..."></textarea>
+        </div>
+    </div>
+
     <!-- Firebase SDKs -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>

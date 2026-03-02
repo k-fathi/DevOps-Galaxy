@@ -2498,15 +2498,16 @@ function renderChecklist(filterModule = null) {
             listDiv.appendChild(flatListContainer);
 
             // Render topics directly as flat list
-            chapterTopics.forEach(t => {
+            chapterTopics.forEach((t, topicIdx) => {
                 const index = currentModalNode.topics.indexOf(t);
                 const isChecked = done.includes(t.id);
 
                 const div = document.createElement('div');
-                div.className = 'checklist-item roadmap-item';
+                div.className = 'checklist-item roadmap-item' + (isChecked ? ' is-completed' : '');
                 div.setAttribute('data-id', t.id);
                 div.setAttribute('data-index', index);
                 div.style.cssText = 'display:flex; flex-direction:column; width:100%; border-bottom:1px solid rgba(255,255,255,0.05);';
+                div.style.animationDelay = `${topicIdx * 0.04}s`;
 
                 const headerRow = document.createElement('div');
                 headerRow.className = 'topic-item';
@@ -2518,9 +2519,15 @@ function renderChecklist(filterModule = null) {
                     adminControls = `<div style="margin-left:auto; display:flex; gap:10px;"><span style="cursor:pointer;" title="Edit Title" onclick="enableInlineEdit(${index})">✏️</span><span style="color:red; cursor:pointer; font-weight:bold;" title="Delete Topic" onclick="deleteTopic(${index})">✕</span></div>`;
                 }
 
-                const arrow = `<i id="arrow-${t.id}" class="fas fa-chevron-right topic-chevron" style="font-size:0.75rem; color:var(--primary); transition:transform 0.3s ease; cursor:pointer;" onclick="toggleAccordion('${t.id}')"></i>`;
+                // Step number indicator
+                const stepNum = `<div class="topic-step-num ${isChecked ? 'completed' : ''}"><span>${topicIdx + 1}</span></div>`;
 
-                headerRow.innerHTML = `${dragHandle}${arrow}<div class="topic-checkbox"><input type="checkbox" ${isChecked ? 'checked' : ''} onchange="toggleTopicDone('${t.id}')" style="transform:scale(1.2); cursor:pointer;"></div><span id="topic-title-${index}" onclick="toggleAccordion('${t.id}')" style="flex:1; cursor:pointer; font-weight:600; display:flex; align-items:center; margin-left:10px; ${isChecked ? 'text-decoration:line-through; opacity:0.7;' : ''}">${t.title}</span>${adminControls}`;
+                // Check if topic has notes for chevron indicator
+                const notesCheckKey = currentModalNode.id + '_' + t.id + '_notes';
+                const hasAnyNotes = !!(t.adminNotes || (userData.progress && userData.progress[notesCheckKey]));
+                const arrow = `<i id="arrow-${t.id}" class="fas fa-chevron-right topic-chevron${hasAnyNotes ? ' has-notes' : ''}" style="font-size:0.75rem; color:var(--primary); transition:transform 0.3s ease; cursor:pointer;" onclick="toggleAccordion('${t.id}')"></i>`;
+
+                headerRow.innerHTML = `${dragHandle}${stepNum}${arrow}<div class="topic-checkbox"><input type="checkbox" ${isChecked ? 'checked' : ''} onchange="toggleTopicDone('${t.id}')" style="cursor:pointer;"></div><span id="topic-title-${index}" onclick="toggleAccordion('${t.id}')" style="flex:1; cursor:pointer; font-weight:600; display:flex; align-items:center; margin-left:10px; ${isChecked ? 'text-decoration:line-through; opacity:0.7;' : ''}">${t.title}</span>${adminControls}`;
 
                 // Details Body
                 const detailsBody = document.createElement('div');
@@ -2546,16 +2553,24 @@ function renderChecklist(filterModule = null) {
                 }
                 detailsBody.innerHTML += resHtml;
 
-                // Notes - Dual Pane System
+                // Notes - Two launcher buttons (content opens in reader modal)
                 const topicNotesKey = currentModalNode.id + '_' + t.id + '_notes';
                 const topicNotes = userData.progress[topicNotesKey] || "";
+                const adminNotes = t.adminNotes || "";
 
-                // Determine Admin Notes (Optional: retrieve from t.adminNotes if implemented, else fallback)
-                const adminNotes = t.adminNotes || "No official documentation provided for this topic yet.";
-
+                // Note action buttons
+                const hasAdminNotes = !!t.adminNotes;
+                const hasUserNotes = !!topicNotes;
                 detailsBody.innerHTML += `
-                <div style="margin-top:10px;">
-                    <!-- Sleek Cyberpunk/Tailwind-style Tabs -->
+                <div class="note-actions-bar">
+                    <button class="note-launch-btn captain ${hasAdminNotes ? 'has-content' : ''}" onclick="openReaderModal('${topicNotesKey}', 'admin', '${t.title.replace(/'/g, "\\'")}')"><i class="fa-solid fa-book-journal-whills"></i><span>Captain's Log</span>${hasAdminNotes ? '<span class="note-dot"></span>' : ''}</button>
+                    <button class="note-launch-btn user ${hasUserNotes ? 'has-content' : ''}" onclick="openReaderModal('${topicNotesKey}', 'user', '${t.title.replace(/'/g, "\\'")}')"><i class="fa-solid fa-user-astronaut"></i><span>My Sandbox</span>${hasUserNotes ? '<span class="note-dot user"></span>' : ''}</button>
+                </div>`;
+
+                // Legacy block removed — kept only for reference:
+                detailsBody.innerHTML += `
+                <div style="display:none">
+                    <!-- Sleek Cyberpunk/Tailwind-style Tabs (LEGACY - hidden) -->
                     <div style="display:flex; gap:10px; margin-bottom:10px; border-bottom:1px solid rgba(255,255,255,0.05); padding-bottom:8px;">
                         <button id="tab-btn-admin-${topicNotesKey}" onclick="switchNoteTab('${topicNotesKey}', 'admin')" 
                             style="background:rgba(0, 242, 255, 0.1); color:#00f2ff; border:1px solid rgba(0,242,255,0.3); padding:6px 14px; border-radius:20px; font-size:0.75rem; font-weight:600; cursor:pointer; text-transform:uppercase; letter-spacing:0.5px; transition:0.3s; box-shadow:0 0 10px rgba(0,242,255,0.1);">
@@ -2579,8 +2594,11 @@ function renderChecklist(filterModule = null) {
                             ${marked.parse(adminNotes)}
                         </div>
                         ${isAdmin && isEditMode ? `
-                        <textarea id="note-edit-admin-${topicNotesKey}" class="dark-input md-edit-box" dir="auto" style="display:none; width:100%; min-height:120px; font-size:0.9rem; margin-top:0;" onblur="saveAdminNoteAndRender('${topicNotesKey}', '${t.id}')">${adminNotes !== "No official documentation provided for this topic yet." ? t.adminNotes || '' : ''}</textarea>
+                        <textarea id="note-edit-admin-${topicNotesKey}" class="dark-input md-edit-box" dir="auto" style="display:none; width:100%; min-height:120px; font-size:0.9rem; margin-top:0;" onblur="saveAdminNoteAndRender('${topicNotesKey}', '${t.id}')">${adminNotes !== 'No official documentation provided for this topic yet.' ? t.adminNotes || '' : ''}</textarea>
                         ` : ''}
+                        <button class="read-summary-btn" onclick="openReaderModal('${topicNotesKey}', 'admin', \"📖 ${t.title} — Captain's Log\")">
+                            <i class="fa-solid fa-book-open" style="font-size:0.8rem;"></i> Read Captain's Log
+                        </button>
                     </div>
 
                     <!-- Pane 2: My Sandbox (User Editable) -->
@@ -2593,6 +2611,9 @@ function renderChecklist(filterModule = null) {
                             ${topicNotes ? marked.parse(topicNotes) : '<span style="font-style:italic; opacity:0.4;">Click to add notes...</span>'}
                         </div>
                         <textarea id="note-edit-${topicNotesKey}" class="dark-input md-edit-box" dir="auto" style="display:none; width:100%; min-height:120px; font-size:0.9rem; margin-top:0;" onblur="saveNoteAndRender('${topicNotesKey}')">${topicNotes}</textarea>
+                        <button class="read-summary-btn" onclick="openReaderModal('${topicNotesKey}', 'user', \"📖 ${t.title} — My Notes\")">
+                            <i class="fa-solid fa-scroll" style="font-size:0.8rem;"></i> Read My Notes
+                        </button>
                     </div>
                 </div>`;
 
@@ -2617,13 +2638,17 @@ function renderChecklist(filterModule = null) {
         const header = document.createElement('div');
         header.className = 'chapter-header'; // User CSS class
 
+        const chapterPercent = chapterTotal > 0 ? Math.round((chapterDoneCount / chapterTotal) * 100) : 0;
         let headerContent = `
             <div style="display: flex; align-items: center; gap: 10px; flex: 1;">
                 ${isAdmin && isEditMode ? '<span class="chapter-drag-handle" style="cursor:grab; font-size:1rem; color:var(--text-muted); margin-right:5px;" title="Drag to reorder">⣿</span>' : ''}
                 <i class="fas fa-chevron-down chapter-chevron"></i>
                 <span class="chapter-title" id="chapter-title-${chapterName.replace(/\s+/g, '-')}" style="font-weight:bold;">${chapterName}</span>
             </div>
-            <span style="font-size:0.8rem; opacity:0.7; margin-right: 10px;">${chapterDoneCount}/${chapterTotal} Done</span>
+            <div style="display:flex; flex-direction:column; align-items:flex-end; margin-right:10px;">
+                <span class="chapter-progress">${chapterDoneCount}/${chapterTotal} Done</span>
+                <div class="chapter-progress-bar"><div class="chapter-progress-fill" style="width:${chapterPercent}%"></div></div>
+            </div>
         `;
 
         // Add Edit and Delete Buttons if Admin AND Edit Mode is active
@@ -2652,28 +2677,24 @@ function renderChecklist(filterModule = null) {
         // User didn't ask for auto-expand. Default collapsed.
 
         // Render Topics inside Body
-        chapterTopics.forEach(t => {
+        chapterTopics.forEach((t, topicIdx) => {
             // Find Original Index for editing
             const index = currentModalNode.topics.indexOf(t);
             const isChecked = done.includes(t.id);
 
             const div = document.createElement('div');
-            div.className = `checklist-item`; // Keep class for possible styling
-            div.className += ' roadmap-item'; // Add user requested class
+            div.className = 'checklist-item roadmap-item' + (isChecked ? ' is-completed' : '');
             div.setAttribute('data-id', t.id); // For sorting
             div.setAttribute('data-index', index);
             if (t.module) div.dataset.module = t.module;
 
-            // Item Styling
+            // Item Styling + staggered animation
             div.style.cssText = 'display:flex; flex-direction:column; width:100%; border-bottom:1px solid rgba(255,255,255,0.05);';
+            div.style.animationDelay = `${topicIdx * 0.04}s`;
 
             // --- Header Row ---
-            // --- Header Row ---
             const headerRow = document.createElement('div');
-            // Use .topic-item for strictly left-aligned styling as requested
             headerRow.className = 'topic-item';
-            // REMOVED inline styles (display:flex, etc) to let CSS .topic-item take full control
-            // Only keeping width:100% just in case, but CSS should handle padding/gap/alignment
 
             let adminControls = '';
             let dragHandle = '';
@@ -2687,14 +2708,20 @@ function renderChecklist(filterModule = null) {
                         `;
             }
 
-            // Inner Accordion Arrow (for details)
-            const arrow = `<i id="arrow-${t.id}" class="fas fa-chevron-right topic-chevron" style="font-size:0.75rem; color:var(--primary); transition:transform 0.3s ease; cursor:pointer;" onclick="toggleAccordion('${t.id}')"></i>`;
+            // Step number indicator
+            const stepNum = `<div class="topic-step-num ${isChecked ? 'completed' : ''}"><span>${topicIdx + 1}</span></div>`;
+
+            // Check if topic has notes for chevron indicator
+            const notesCheckKey = currentModalNode.id + '_' + t.id + '_notes';
+            const hasAnyNotes = !!(t.adminNotes || (userData.progress && userData.progress[notesCheckKey]));
+            const arrow = `<i id="arrow-${t.id}" class="fas fa-chevron-right topic-chevron${hasAnyNotes ? ' has-notes' : ''}" style="font-size:0.75rem; color:var(--primary); transition:transform 0.3s ease; cursor:pointer;" onclick="toggleAccordion('${t.id}')"></i>`;
 
             headerRow.innerHTML = `
                         ${dragHandle}
+                        ${stepNum}
                         ${arrow}
                         <div class="topic-checkbox">
-                             <input type="checkbox" ${isChecked ? 'checked' : ''} onchange="toggleTopicDone('${t.id}')" style="transform:scale(1.2); cursor:pointer;">
+                             <input type="checkbox" ${isChecked ? 'checked' : ''} onchange="toggleTopicDone('${t.id}')" style="cursor:pointer;">
                         </div>
                         <span id="topic-title-${index}" onclick="toggleAccordion('${t.id}')" style="flex:1; cursor:pointer; font-weight:600; display:flex; align-items:center; margin-left:10px; ${isChecked ? 'text-decoration:line-through; opacity:0.7;' : ''}">
                             ${t.title}
@@ -2770,54 +2797,28 @@ function renderChecklist(filterModule = null) {
                 userLinksDiv.innerHTML += `<div style="font-size:0.8rem; font-style:italic; opacity:0.5;">No personal links yet.</div>`;
             }
 
-            // 5. Notes - Dual Pane System
+            // 5. Notes — Two launcher buttons (open in reader modal)
             const topicNotesKey = currentModalNode.id + '_' + t.id + '_notes';
-            const topicNotes = userData.progress[topicNotesKey] || "";
-            const adminNotes = t.adminNotes || "No official documentation provided for this topic yet.";
+            const topicNotes = userData.progress[topicNotesKey] || '';
+            const adminNotes = t.adminNotes || '';
+            const hasAdminNotes = !!t.adminNotes;
+            const hasUserNotes = !!topicNotes;
 
             const noteDiv = document.createElement('div');
+            noteDiv.className = 'note-actions-bar';
             noteDiv.innerHTML = `
-             <div style="margin-top:10px;">
-                 <!-- Sleek Cyberpunk/Tailwind-style Tabs -->
-                 <div style="display:flex; gap:10px; margin-bottom:10px; border-bottom:1px solid rgba(255,255,255,0.05); padding-bottom:8px;">
-                     <button id="tab-btn-admin-${topicNotesKey}" onclick="switchNoteTab('${topicNotesKey}', 'admin')" 
-                         style="background:rgba(0, 242, 255, 0.1); color:#00f2ff; border:1px solid rgba(0,242,255,0.3); padding:6px 14px; border-radius:20px; font-size:0.75rem; font-weight:600; cursor:pointer; text-transform:uppercase; letter-spacing:0.5px; transition:0.3s; box-shadow:0 0 10px rgba(0,242,255,0.1);">
-                         <i class="fa-solid fa-book-journal-whills" style="margin-right:5px;"></i> Captain's Log
-                     </button>
-                     <button id="tab-btn-user-${topicNotesKey}" onclick="switchNoteTab('${topicNotesKey}', 'user')" 
-                         style="background:transparent; color:var(--text-muted); border:1px solid transparent; padding:6px 14px; border-radius:20px; font-size:0.75rem; font-weight:600; cursor:pointer; text-transform:uppercase; letter-spacing:0.5px; transition:0.3s;">
-                         <i class="fa-solid fa-user-astronaut" style="margin-right:5px;"></i> My Sandbox
-                     </button>
-                 </div>
-
-                 <!-- Pane 1: Captain's Log (Admin / Read-Only for Users) -->
-                 <div id="pane-admin-${topicNotesKey}" class="admin-note-pane" style="display:block; background:#0f172a; padding:15px; border-radius:8px; border:1px solid rgba(0,242,255,0.2); box-shadow: inset 0 0 15px rgba(0,242,255,0.05); margin-bottom:10px;">
-                     ${isAdmin && isEditMode ? `
-                     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-                         <div style="font-size:0.75rem; color:#00f2ff; font-weight:600; text-transform:uppercase; letter-spacing:0.5px;">Admin Controls</div>
-                         <span id="edit-icon-admin-${topicNotesKey}" onclick="toggleAdminNoteEdit('${topicNotesKey}')" style="cursor:pointer; font-size:0.8rem; color:var(--primary);">✏️ Edit Log</span>
-                     </div>
-                     ` : ''}
-                     <div id="note-view-admin-${topicNotesKey}" class="md-content" style="font-size:0.9rem;">
-                         ${marked.parse(adminNotes)}
-                     </div>
-                     ${isAdmin && isEditMode ? `
-                     <textarea id="note-edit-admin-${topicNotesKey}" class="dark-input md-edit-box" dir="auto" style="display:none; width:100%; min-height:120px; font-size:0.9rem; margin-top:0;" onblur="saveAdminNoteAndRender('${topicNotesKey}', '${t.id}')">${adminNotes !== "No official documentation provided for this topic yet." ? t.adminNotes || '' : ''}</textarea>
-                     ` : ''}
-                 </div>
-
-                 <!-- Pane 2: My Sandbox (User Editable) -->
-                 <div id="pane-user-${topicNotesKey}" style="display:none;">
-                     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-                         <div style="font-size:0.75rem; color:var(--text-muted); font-weight:600; text-transform:uppercase; letter-spacing:0.5px;"><i class="fa-regular fa-file-lines" style="margin-right:5px;"></i> My Notes</div>
-                         <span onclick="toggleNoteEdit('${topicNotesKey}')" style="cursor:pointer; font-size:0.8rem; opacity:0.5;">✏️ Edit</span>
-                     </div>
-                     <div id="note-view-${topicNotesKey}" class="md-content" style="background:rgba(0,0,0,0.15); padding:12px; border-radius:8px; border:1px solid rgba(255,255,255,0.05); min-height:40px; cursor:pointer; font-size:0.9rem;" onclick="toggleNoteEdit('${topicNotesKey}')">
-                         ${topicNotes ? marked.parse(topicNotes) : '<span style="font-style:italic; opacity:0.4;">Click to add notes...</span>'}
-                     </div>
-                     <textarea id="note-edit-${topicNotesKey}" class="dark-input md-edit-box" dir="auto" style="display:none; width:100%; min-height:120px; font-size:0.9rem; margin-top:0;" onblur="saveNoteAndRender('${topicNotesKey}')">${topicNotes}</textarea>
-                 </div>
-             </div>
+                <button class="note-launch-btn captain ${hasAdminNotes ? 'has-content' : ''}"
+                        onclick="openReaderModal('${topicNotesKey}', 'admin', '${t.title.replace(/'/g, "\\'")}')">
+                    <i class="fa-solid fa-book-journal-whills"></i>
+                    <span>Captain's Log</span>
+                    ${hasAdminNotes ? '<span class="note-dot"></span>' : ''}
+                </button>
+                <button class="note-launch-btn user ${hasUserNotes ? 'has-content' : ''}"
+                        onclick="openReaderModal('${topicNotesKey}', 'user', '${t.title.replace(/'/g, "\\'")}')">
+                    <i class="fa-solid fa-user-astronaut"></i>
+                    <span>My Sandbox</span>
+                    ${hasUserNotes ? '<span class="note-dot user"></span>' : ''}
+                </button>
             `;
 
             detailsBody.appendChild(checkDiv);
@@ -3294,9 +3295,33 @@ async function removeProofFromModal() {
 function toggleAccordion(tid) {
     const body = document.getElementById(`accordion-${tid}`);
     const arrow = document.getElementById(`arrow-${tid}`);
-    if (body.style.display === 'none') {
+
+    const isOpening = body.style.display === 'none';
+
+    if (isOpening) {
         body.style.display = 'block';
         if (arrow) arrow.style.transform = 'rotate(90deg)';
+
+        // --- Auto-open Reader Modal if notes exist ---
+        // Build the progress key from the current modal node + topic id
+        const notesKey = `${currentModalNode.id}_${tid}_notes`;
+
+        // Priority 1: Captain's Log (admin notes)
+        const topic = currentModalNode && currentModalNode.topics
+            ? currentModalNode.topics.find(t => t.id === tid)
+            : null;
+        const adminNotes = topic && topic.adminNotes;
+        const userNotes = userData && userData.progress && userData.progress[notesKey];
+        const topicTitle = topic ? topic.title : '';
+
+        if (adminNotes) {
+            // Short delay so the accordion DOM renders before the modal appears
+            setTimeout(() => openReaderModal(notesKey, 'admin', `📖 ${topicTitle} — Captain's Log`), 50);
+        } else if (userNotes) {
+            setTimeout(() => openReaderModal(notesKey, 'user', `📖 ${topicTitle} — My Notes`), 50);
+        }
+        // If no notes at all → accordion body stays visible (proof, resources etc.)
+
     } else {
         body.style.display = 'none';
         if (arrow) arrow.style.transform = 'rotate(0deg)';
@@ -4412,4 +4437,177 @@ function updateDevOpsTip() {
 document.addEventListener('DOMContentLoaded', () => {
     updateDevOpsTip();
     setInterval(updateDevOpsTip, 60000);
+
+    // --- Reader Modal: close on backdrop click ---
+    const readerModal = document.getElementById('reader-modal');
+    if (readerModal) {
+        readerModal.addEventListener('click', function (e) {
+            if (e.target === this) closeReaderModal();
+        });
+    }
 });
+
+// ESC key closes the reader modal globally
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+        const readerModal = document.getElementById('reader-modal');
+        if (readerModal && readerModal.classList.contains('visible')) {
+            closeReaderModal();
+        }
+    }
+});
+
+// ============================================================
+// READER / THEATER MODE MODAL
+// ============================================================
+
+let _readerContext = null; // stores { notesKey, pane } for the Edit button
+
+/**
+ * Helper: escape backticks so the string is safe to embed inside onclick="...`...`"
+ */
+function _escForReader(str) {
+    return (str || '').replace(/`/g, '\\`').replace(/\$/g, '\\$');
+}
+
+/**
+ * Open the reading terminal overlay.
+ * @param {string} notesKey - The progress key (e.g. "nodeId_topicId_notes")
+ * @param {string} pane     - 'admin' or 'user'
+ * @param {string} title    - Displayed in the modal header
+ */
+function openReaderModal(notesKey, pane, title) {
+    const modal = document.getElementById('reader-modal');
+    const titleEl = document.getElementById('reader-modal-title');
+    const body = document.getElementById('reader-modal-body');
+    const editBtn = document.getElementById('reader-edit-btn');
+
+    // Resolve raw markdown from live data
+    let markdownContent = '';
+    if (pane === 'admin') {
+        const topicId = notesKey.replace(/_notes$/, '').split('_').slice(1).join('_');
+        const topic = currentModalNode && currentModalNode.topics
+            ? currentModalNode.topics.find(t => t.id === topicId)
+            : null;
+        markdownContent = (topic && topic.adminNotes) ? topic.adminNotes : '';
+    } else {
+        markdownContent = (userData && userData.progress && userData.progress[notesKey]) || '';
+    }
+
+    // Store raw content for edit mode
+    _readerContext = { notesKey, pane, rawContent: markdownContent };
+
+    titleEl.textContent = title || '📖 Reading Terminal';
+
+    // Ensure view mode on open
+    _readerShowView(markdownContent);
+
+    // Show edit button only when user has permission
+    const canEdit = (pane === 'user') || (pane === 'admin' && isAdmin && isEditMode);
+    editBtn.style.display = canEdit ? 'inline-flex' : 'none';
+
+    modal.classList.add('visible');
+    document.body.style.overflow = 'hidden';
+}
+
+/** Internal: render markdown in the reader body (view mode). */
+function _readerShowView(markdownContent) {
+    const body = document.getElementById('reader-modal-body');
+    const editArea = document.getElementById('reader-edit-textarea');
+    const saveBtn = document.getElementById('reader-save-btn');
+    const cancelBtn = document.getElementById('reader-cancel-btn');
+
+    body.style.display = 'block';
+    editArea.style.display = 'none';
+    // editBtn visibility NOT set here — caller controls it based on permissions
+    saveBtn.style.display = 'none';
+    cancelBtn.style.display = 'none';
+
+    body.innerHTML = (markdownContent && markdownContent.trim())
+        ? marked.parse(markdownContent)
+        : '<p style="font-style:italic;opacity:0.4;text-align:center;margin-top:60px;padding:0 20px;">No content yet. Click ✏️ Edit to start writing.</p>';
+    body.querySelectorAll('pre code').forEach(block => hljs.highlightElement(block));
+}
+
+/** Called by ✏️ Edit button — switches reader to edit mode in-place. */
+function readerStartEdit() {
+    if (!_readerContext) return;
+    const body = document.getElementById('reader-modal-body');
+    const editArea = document.getElementById('reader-edit-textarea');
+    const editBtn = document.getElementById('reader-edit-btn');
+    const saveBtn = document.getElementById('reader-save-btn');
+    const cancelBtn = document.getElementById('reader-cancel-btn');
+
+    body.style.display = 'none';
+    editArea.style.display = 'block';
+    editArea.value = _readerContext.rawContent || '';
+    editBtn.style.display = 'none';
+    saveBtn.style.display = 'inline-flex';
+    cancelBtn.style.display = 'inline-flex';
+    editArea.focus();
+}
+
+/** Called by ✓ Save button — saves note and shows updated view. */
+async function readerConfirmSave() {
+    if (!_readerContext) return;
+    const editArea = document.getElementById('reader-edit-textarea');
+    const newVal = editArea.value;
+    const { notesKey, pane } = _readerContext;
+
+    if (pane === 'user') {
+        // Save user note
+        userData.progress[notesKey] = newVal;
+        _readerContext.rawContent = newVal;
+        await saveSpecificTopicNote(notesKey, newVal);
+        showToast('✅ Note Saved');
+    } else {
+        // Save admin note
+        const topicId = notesKey.replace(/_notes$/, '').split('_').slice(1).join('_');
+        const topic = currentModalNode && currentModalNode.topics
+            ? currentModalNode.topics.find(t => t.id === topicId)
+            : null;
+        if (topic) {
+            if (newVal.trim()) {
+                topic.adminNotes = newVal;
+            } else {
+                delete topic.adminNotes;
+            }
+            _readerContext.rawContent = newVal;
+            // Save to Firestore
+            const col = currentModalNode.id.toString().startsWith('p') ? 'global_parallel' : 'global_roadmap';
+            await db.collection(col).doc(currentModalNode.id.toString()).update({ topics: currentModalNode.topics });
+            showToast('✅ Captain\'s Log Updated');
+        }
+    }
+
+    _readerShowView(newVal);
+
+    // Re-show edit button
+    const canEdit = (pane === 'user') || (pane === 'admin' && isAdmin && isEditMode);
+    document.getElementById('reader-edit-btn').style.display = canEdit ? 'inline-flex' : 'none';
+
+    // Force checklist to re-render so dot indicators update
+    renderChecklist();
+}
+
+/** Called by ✕ Cancel button in edit mode — reverts to view. */
+function readerCancelEdit() {
+    if (!_readerContext) return;
+    _readerShowView(_readerContext.rawContent || '');
+    const canEdit = (_readerContext.pane === 'user') || (_readerContext.pane === 'admin' && isAdmin && isEditMode);
+    document.getElementById('reader-edit-btn').style.display = canEdit ? 'inline-flex' : 'none';
+}
+
+/** Close the reading terminal overlay. */
+function closeReaderModal() {
+    const modal = document.getElementById('reader-modal');
+    modal.classList.remove('visible');
+    document.body.style.overflow = '';
+    // Reset edit mode
+    document.getElementById('reader-modal-body').style.display = 'block';
+    document.getElementById('reader-edit-textarea').style.display = 'none';
+    _readerContext = null;
+}
+
+// openReaderEditor kept as alias (no longer routes to inline editor — handled inside reader now)
+function openReaderEditor() { readerStartEdit(); }

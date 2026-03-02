@@ -4341,8 +4341,8 @@ function getUserContext() {
                 const adminNote = t.adminNotes;
                 if (userNote || adminNote) {
                     topicNotesContext += `\n--- ${node.title} → ${t.title} ---\n`;
-                    if (adminNote) topicNotesContext += `[Study Guide]: ${adminNote}\n`;
-                    if (userNote) topicNotesContext += `[My Notes]: ${userNote}\n`;
+                    if (adminNote) topicNotesContext += `[Study Guide]: ${adminNote.substring(0, 1000)}\n`;
+                    if (userNote) topicNotesContext += `[My Notes]: ${userNote.substring(0, 1000)}\n`;
                 }
             });
         });

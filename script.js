@@ -2563,8 +2563,8 @@ function renderChecklist(filterModule = null) {
                 const hasUserNotes = !!topicNotes;
                 detailsBody.innerHTML += `
                 <div class="note-actions-bar">
-                    <button class="note-launch-btn captain ${hasAdminNotes ? 'has-content' : ''}" onclick="openReaderModal('${topicNotesKey}', 'admin', '${t.title.replace(/'/g, "\\'")}')"><i class="fa-solid fa-book-journal-whills"></i><span>Captain's Log</span>${hasAdminNotes ? '<span class="note-dot"></span>' : ''}</button>
-                    <button class="note-launch-btn user ${hasUserNotes ? 'has-content' : ''}" onclick="openReaderModal('${topicNotesKey}', 'user', '${t.title.replace(/'/g, "\\'")}')"><i class="fa-solid fa-user-astronaut"></i><span>My Sandbox</span>${hasUserNotes ? '<span class="note-dot user"></span>' : ''}</button>
+                    <button class="note-launch-btn captain ${hasAdminNotes ? 'has-content' : ''}" onclick="openReaderModal('${topicNotesKey}', 'admin', '${t.title.replace(/'/g, "\\'")}')"><span>Study Guide</span>${hasAdminNotes ? '<span class="note-dot"></span>' : ''}</button>
+                    <button class="note-launch-btn user ${hasUserNotes ? 'has-content' : ''}" onclick="openReaderModal('${topicNotesKey}', 'user', '${t.title.replace(/'/g, "\\'")}')"><span>My Notes</span>${hasUserNotes ? '<span class="note-dot user"></span>' : ''}</button>
                 </div>`;
 
                 // Legacy block removed — kept only for reference:
@@ -2596,8 +2596,8 @@ function renderChecklist(filterModule = null) {
                         ${isAdmin && isEditMode ? `
                         <textarea id="note-edit-admin-${topicNotesKey}" class="dark-input md-edit-box" dir="auto" style="display:none; width:100%; min-height:120px; font-size:0.9rem; margin-top:0;" onblur="saveAdminNoteAndRender('${topicNotesKey}', '${t.id}')">${adminNotes !== 'No official documentation provided for this topic yet.' ? t.adminNotes || '' : ''}</textarea>
                         ` : ''}
-                        <button class="read-summary-btn" onclick="openReaderModal('${topicNotesKey}', 'admin', \"📖 ${t.title} — Captain's Log\")">
-                            <i class="fa-solid fa-book-open" style="font-size:0.8rem;"></i> Read Captain's Log
+                        <button class="read-summary-btn" onclick="openReaderModal('${topicNotesKey}', 'admin', \"${t.title} — Study Guide\")">
+                            <i class="fa-solid fa-book-open" style="font-size:0.8rem;"></i> Read Study Guide
                         </button>
                     </div>
 
@@ -2809,14 +2809,14 @@ function renderChecklist(filterModule = null) {
             noteDiv.innerHTML = `
                 <button class="note-launch-btn captain ${hasAdminNotes ? 'has-content' : ''}"
                         onclick="openReaderModal('${topicNotesKey}', 'admin', '${t.title.replace(/'/g, "\\'")}')">
-                    <i class="fa-solid fa-book-journal-whills"></i>
-                    <span>Captain's Log</span>
+                    <i class="fa-solid fa-book-open"></i>
+                    <span>Study Guide</span>
                     ${hasAdminNotes ? '<span class="note-dot"></span>' : ''}
                 </button>
                 <button class="note-launch-btn user ${hasUserNotes ? 'has-content' : ''}"
                         onclick="openReaderModal('${topicNotesKey}', 'user', '${t.title.replace(/'/g, "\\'")}')">
-                    <i class="fa-solid fa-user-astronaut"></i>
-                    <span>My Sandbox</span>
+                    <i class="fa-solid fa-pen-to-square"></i>
+                    <span>My Notes</span>
                     ${hasUserNotes ? '<span class="note-dot user"></span>' : ''}
                 </button>
             `;
@@ -3316,9 +3316,9 @@ function toggleAccordion(tid) {
 
         if (adminNotes) {
             // Short delay so the accordion DOM renders before the modal appears
-            setTimeout(() => openReaderModal(notesKey, 'admin', `📖 ${topicTitle} — Captain's Log`), 50);
+            setTimeout(() => openReaderModal(notesKey, 'admin', `${topicTitle} — Study Guide`), 50);
         } else if (userNotes) {
-            setTimeout(() => openReaderModal(notesKey, 'user', `📖 ${topicTitle} — My Notes`), 50);
+            setTimeout(() => openReaderModal(notesKey, 'user', `${topicTitle} — My Notes`), 50);
         }
         // If no notes at all → accordion body stays visible (proof, resources etc.)
 
@@ -4461,13 +4461,33 @@ document.addEventListener('keydown', (e) => {
 // READER / THEATER MODE MODAL
 // ============================================================
 
-let _readerContext = null; // stores { notesKey, pane } for the Edit button
+let _readerContext = null; // stores { notesKey, pane, topicIndex } for nav + edit
 
 /**
  * Helper: escape backticks so the string is safe to embed inside onclick="...`...`"
  */
 function _escForReader(str) {
     return (str || '').replace(/`/g, '\\`').replace(/\$/g, '\\$');
+}
+
+/**
+ * Get the currently visible topic list (respects active module/chapter filters).
+ * Returns an array of topic objects from currentModalNode.topics.
+ */
+function _getVisibleTopics() {
+    if (!currentModalNode || !currentModalNode.topics) return [];
+
+    // Check active module filter
+    const activeBtn = document.querySelector('.module-filter-btn.active');
+    const activeModule = activeBtn ? activeBtn.dataset.module : null;
+
+    let topics = currentModalNode.topics;
+    if (activeModule === '__general__') {
+        topics = topics.filter(t => !t.module);
+    } else if (activeModule) {
+        topics = topics.filter(t => t.module === activeModule);
+    }
+    return topics;
 }
 
 /**
@@ -4484,20 +4504,26 @@ function openReaderModal(notesKey, pane, title) {
 
     // Resolve raw markdown from live data
     let markdownContent = '';
+    const topicId = notesKey.replace(/_notes$/, '').split('_').slice(1).join('_');
+    const topic = currentModalNode && currentModalNode.topics
+        ? currentModalNode.topics.find(t => t.id === topicId)
+        : null;
+
     if (pane === 'admin') {
-        const topicId = notesKey.replace(/_notes$/, '').split('_').slice(1).join('_');
-        const topic = currentModalNode && currentModalNode.topics
-            ? currentModalNode.topics.find(t => t.id === topicId)
-            : null;
         markdownContent = (topic && topic.adminNotes) ? topic.adminNotes : '';
     } else {
         markdownContent = (userData && userData.progress && userData.progress[notesKey]) || '';
     }
 
-    // Store raw content for edit mode
-    _readerContext = { notesKey, pane, rawContent: markdownContent };
+    // Find topic index in visible list for navigation
+    const visibleTopics = _getVisibleTopics();
+    const topicIndex = topic ? visibleTopics.indexOf(topic) : -1;
 
-    titleEl.textContent = title || '📖 Reading Terminal';
+    // Store context for edit mode + navigation
+    _readerContext = { notesKey, pane, rawContent: markdownContent, topicIndex };
+
+    // Update title — show topic name
+    titleEl.textContent = topic ? topic.title : (title || 'Reading Terminal');
 
     // Ensure view mode on open
     _readerShowView(markdownContent);
@@ -4506,8 +4532,53 @@ function openReaderModal(notesKey, pane, title) {
     const canEdit = (pane === 'user') || (pane === 'admin' && isAdmin && isEditMode);
     editBtn.style.display = canEdit ? 'inline-flex' : 'none';
 
+    // Update active tab
+    const adminTab = document.getElementById('reader-tab-admin');
+    const userTab = document.getElementById('reader-tab-user');
+    if (adminTab && userTab) {
+        adminTab.classList.toggle('active', pane === 'admin');
+        userTab.classList.toggle('active', pane === 'user');
+    }
+
+    // Update prev/next button states
+    const prevBtn = document.getElementById('reader-prev-btn');
+    const nextBtn = document.getElementById('reader-next-btn');
+    if (prevBtn) prevBtn.disabled = (topicIndex <= 0);
+    if (nextBtn) nextBtn.disabled = (topicIndex < 0 || topicIndex >= visibleTopics.length - 1);
+
     modal.classList.add('visible');
     document.body.style.overflow = 'hidden';
+}
+
+/**
+ * Navigate to prev/next topic within the reader modal.
+ * @param {number} direction - -1 for previous, +1 for next
+ */
+function readerNavigate(direction) {
+    if (!_readerContext || !currentModalNode) return;
+
+    const visibleTopics = _getVisibleTopics();
+    const newIndex = _readerContext.topicIndex + direction;
+
+    if (newIndex < 0 || newIndex >= visibleTopics.length) return;
+
+    const newTopic = visibleTopics[newIndex];
+    const newNotesKey = currentModalNode.id + '_' + newTopic.id + '_notes';
+    const currentPane = _readerContext.pane;
+
+    // Open the same pane (Study Guide or My Notes) for the new topic
+    openReaderModal(newNotesKey, currentPane, newTopic.title);
+}
+
+/**
+ * Switch between Study Guide (admin) and My Notes (user) panes.
+ * @param {string} pane - 'admin' or 'user'
+ */
+function readerSwitchPane(pane) {
+    if (!_readerContext) return;
+
+    // Reopen with same topic but different pane
+    openReaderModal(_readerContext.notesKey, pane, null);
 }
 
 /** Internal: render markdown in the reader body (view mode). */
@@ -4576,7 +4647,7 @@ async function readerConfirmSave() {
             // Save to Firestore
             const col = currentModalNode.id.toString().startsWith('p') ? 'global_parallel' : 'global_roadmap';
             await db.collection(col).doc(currentModalNode.id.toString()).update({ topics: currentModalNode.topics });
-            showToast('✅ Captain\'s Log Updated');
+            showToast('✅ Study Guide Updated');
         }
     }
 

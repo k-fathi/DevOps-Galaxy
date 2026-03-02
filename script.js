@@ -4325,10 +4325,30 @@ function getUserContext() {
         const allUserLogs = allLogs;
 
         if (allUserLogs.length > 0) {
-            notesContext = "\nAll User Notes (Newest First):\n";
+            notesContext = "\nAll User Diary Logs (Newest First):\n";
             allUserLogs.forEach((log, idx) => {
                 notesContext += `${idx + 1}. [Date: ${log.date.split('T')[0]}] ${log.text}\n`;
             });
+        }
+
+        // Collect per-topic notes (My Notes + Study Guide)
+        let topicNotesContext = "";
+        const allNodes = [...roadmapNodes, ...parallelNodes];
+        allNodes.forEach(node => {
+            (node.topics || []).forEach(t => {
+                const notesKey = node.id + '_' + t.id + '_notes';
+                const userNote = userData.progress && userData.progress[notesKey];
+                const adminNote = t.adminNotes;
+                if (userNote || adminNote) {
+                    topicNotesContext += `\n--- ${node.title} → ${t.title} ---\n`;
+                    if (adminNote) topicNotesContext += `[Study Guide]: ${adminNote.substring(0, 500)}\n`;
+                    if (userNote) topicNotesContext += `[My Notes]: ${userNote.substring(0, 500)}\n`;
+                }
+            });
+        });
+
+        if (topicNotesContext) {
+            notesContext += "\nTopic Notes (Study Guide & My Notes):" + topicNotesContext;
         }
 
         return `[SYSTEM CONTEXT: User="${userName}", GlobalProgress="${completedTopics}/${totalTopics} (${percent}%)", ${nextTopicInfo}${notesContext}The user is currently on the DevOps Galaxy Roadmap. Use this info to tailor your answer.]`;

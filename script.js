@@ -2983,6 +2983,28 @@ function applySyntaxHighlighting(containerElement) {
     });
 }
 
+/**
+ * Shared helper: track an activity event for the heatmap.
+ * @param {string} type - Activity type (e.g. 'note_save', 'topic_complete', 'admin_note')
+ */
+async function _trackActivity(type) {
+    if (!auth.currentUser) return;
+    const now = new Date().toISOString();
+    if (!userData.activityHistory) userData.activityHistory = [];
+    userData.activityHistory.push({ date: now, type: type });
+
+    try {
+        await db.collection('users').doc(auth.currentUser.uid).update({
+            activityHistory: userData.activityHistory
+        });
+    } catch (e) {
+        console.warn('Activity tracking failed:', e);
+    }
+
+    // Refresh heatmap if visible
+    renderHeatmap();
+}
+
 async function saveSpecificTopicNote(key, val) {
     const now = new Date().toISOString();
     userData.lastActive = now; // Update local state immediately
@@ -3000,6 +3022,9 @@ async function saveSpecificTopicNote(key, val) {
             ...userData,
             lastActive: now
         }, { merge: true });
+
+        // Track note save as activity for heatmap
+        await _trackActivity('note_save');
     }
     calculateTotalLogs();
     calculateClusterHealth(); // Trigger health update
@@ -3133,7 +3158,9 @@ async function saveAdminNoteAndRender(topicNotesKey, topicId) {
         await db.collection(col).doc(currentModalNode.id.toString()).update({
             topics: currentModalNode.topics
         });
-        showToast("✅ Admin Log Updated & Saved");
+        showToast("✅ Study Guide Updated & Saved");
+        // Track admin note as activity for heatmap
+        await _trackActivity('admin_note');
     } catch (err) {
         console.error("Error saving admin notes:", err);
         showToast("⚠️ Error saving admin notes", true);
@@ -4648,6 +4675,7 @@ async function readerConfirmSave() {
             const col = currentModalNode.id.toString().startsWith('p') ? 'global_parallel' : 'global_roadmap';
             await db.collection(col).doc(currentModalNode.id.toString()).update({ topics: currentModalNode.topics });
             showToast('✅ Study Guide Updated');
+            await _trackActivity('admin_note');
         }
     }
 

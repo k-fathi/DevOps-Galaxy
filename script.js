@@ -4652,38 +4652,41 @@ async function readerConfirmSave() {
     const newVal = editArea.value;
     const { notesKey, pane } = _readerContext;
 
-    if (pane === 'user') {
-        // Save user note
-        userData.progress[notesKey] = newVal;
-        _readerContext.rawContent = newVal;
-        await saveSpecificTopicNote(notesKey, newVal);
-        showToast('✅ Note Saved');
-    } else {
-        // Save admin note
-        const topicId = notesKey.replace(/_notes$/, '').split('_').slice(1).join('_');
-        const topic = currentModalNode && currentModalNode.topics
-            ? currentModalNode.topics.find(t => t.id === topicId)
-            : null;
-        if (topic) {
-            if (newVal.trim()) {
-                topic.adminNotes = newVal;
-            } else {
-                delete topic.adminNotes;
-            }
-            _readerContext.rawContent = newVal;
-            // Save to Firestore
-            const col = currentModalNode.id.toString().startsWith('p') ? 'global_parallel' : 'global_roadmap';
-            await db.collection(col).doc(currentModalNode.id.toString()).update({ topics: currentModalNode.topics });
-            showToast('✅ Study Guide Updated');
-            await _trackActivity('admin_note');
-        }
-    }
+    // Update raw content immediately
+    _readerContext.rawContent = newVal;
 
+    // Switch to view mode IMMEDIATELY (don't wait for save)
     _readerShowView(newVal);
-
-    // Re-show edit button
     const canEdit = (pane === 'user') || (pane === 'admin' && isAdmin && isEditMode);
     document.getElementById('reader-edit-btn').style.display = canEdit ? 'inline-flex' : 'none';
+
+    // Now save in background
+    try {
+        if (pane === 'user') {
+            userData.progress[notesKey] = newVal;
+            await saveSpecificTopicNote(notesKey, newVal);
+            showToast('✅ Note Saved');
+        } else {
+            const topicId = notesKey.replace(/_notes$/, '').split('_').slice(1).join('_');
+            const topic = currentModalNode && currentModalNode.topics
+                ? currentModalNode.topics.find(t => t.id === topicId)
+                : null;
+            if (topic) {
+                if (newVal.trim()) {
+                    topic.adminNotes = newVal;
+                } else {
+                    delete topic.adminNotes;
+                }
+                const col = currentModalNode.id.toString().startsWith('p') ? 'global_parallel' : 'global_roadmap';
+                await db.collection(col).doc(currentModalNode.id.toString()).update({ topics: currentModalNode.topics });
+                showToast('✅ Study Guide Updated');
+                await _trackActivity('admin_note');
+            }
+        }
+    } catch (err) {
+        console.error('Save error:', err);
+        showToast('⚠️ Save failed', true);
+    }
 
     // Force checklist to re-render so dot indicators update
     renderChecklist();

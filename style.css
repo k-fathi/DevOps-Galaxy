@@ -1723,8 +1723,8 @@ input:checked+.slider:before {
     font-size: 1.1rem;
     cursor: pointer;
     transition: all 0.2s ease;
-    filter: grayscale(1);
-    opacity: 0.3;
+    filter: grayscale(0.5);
+    opacity: 0.65;
     margin: 0;
     margin-right: 8px;
     /* Gap for icon */

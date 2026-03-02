@@ -658,32 +658,32 @@
     <div id="reader-modal" class="modal-card-overlay">
         <div class="reader-card">
             <div class="reader-header">
-                <div class="reader-nav-row">
-                    <button id="reader-prev-btn" class="reader-nav-btn" onclick="readerNavigate(-1)" title="Previous Topic">
+                <div class="reader-nav-group">
+                    <button id="reader-prev-btn" class="reader-nav-btn" onclick="readerNavigate(-1)"
+                        title="Previous Topic">
                         <i class="fas fa-chevron-left"></i>
                     </button>
-                    <h2 id="reader-modal-title" class="reader-topic-title">Reading Terminal</h2>
                     <button id="reader-next-btn" class="reader-nav-btn" onclick="readerNavigate(1)" title="Next Topic">
                         <i class="fas fa-chevron-right"></i>
                     </button>
                 </div>
-                <div class="reader-controls-row">
+                <h2 id="reader-modal-title" class="reader-topic-title">Reading Terminal</h2>
+                <div class="reader-right-group">
                     <div class="reader-mode-tabs">
-                        <button id="reader-tab-admin" class="reader-mode-tab active" onclick="readerSwitchPane('admin')">Study Guide</button>
-                        <button id="reader-tab-user" class="reader-mode-tab" onclick="readerSwitchPane('user')">My Notes</button>
+                        <button id="reader-tab-admin" class="reader-mode-tab active"
+                            onclick="readerSwitchPane('admin')">Study Guide</button>
+                        <button id="reader-tab-user" class="reader-mode-tab" onclick="readerSwitchPane('user')">My
+                            Notes</button>
                     </div>
                     <div class="reader-actions">
-                        <!-- View mode buttons -->
                         <button id="reader-edit-btn" class="reader-header-btn" style="display:none;"
                             onclick="readerStartEdit()">Edit</button>
-                        <!-- Edit mode buttons (hidden until edit) -->
                         <button id="reader-save-btn" class="reader-header-btn reader-save" style="display:none;"
                             onclick="readerConfirmSave()">✓ Save</button>
                         <button id="reader-cancel-btn" class="reader-header-btn reader-cancel" style="display:none;"
                             onclick="readerCancelEdit()">✕ Cancel</button>
-                        <button class="icon-btn" onclick="closeReaderModal()"
-                            style="width:36px; height:36px; font-size:1.1rem; flex-shrink:0;">✕</button>
                     </div>
+                    <button class="reader-close-btn" onclick="closeReaderModal()" title="Close">✕</button>
                 </div>
             </div>
             <!-- View mode: rendered markdown -->
